@@ -1,4 +1,5 @@
-﻿using Graphics;
+﻿using Factories;
+using Graphics;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -26,7 +27,8 @@ namespace PA02_Paint_Application
         {
             GraphicObject rectangle = new RectangleObject(new Point(100, 100), new Point(400, 200), Brushes.Red, 1, new NormalStroke(), 0, false, false, false);
             drawCanvas.Children.Add(rectangle.ConvertToUIElement());
-            GraphicObject graphicObject = new EllipseObject(new Point(100, 100), new Point(400, 200), Brushes.Red, 5, new DashDotDotStroke(), 45, false, false, false);
+            IShapeObjectFactory factory = new EllipseObjectFactory();
+            GraphicObject graphicObject = factory.CreateProduct(new Point(100, 100), new Point(400, 200), Brushes.Red, 5, new DashDotDotStroke(), 45, false, false, false);
             drawCanvas.Children.Add(graphicObject.ConvertToUIElement());
             GraphicObject textObject = new TextObject((ShapeObject)graphicObject, "Lorem ipsum dolor bla bla bla so long I love you moah moah", Brushes.Black, 12, "Meo", Brushes.Transparent);
             drawCanvas.Children.Add(textObject.ConvertToUIElement());

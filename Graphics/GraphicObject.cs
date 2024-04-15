@@ -18,13 +18,22 @@ namespace Graphics
             _id = Guid.NewGuid().ToString();
         }
 
-        // Prototype design pattern
+        /// <summary>
+        /// Prototype design pattern, used to make a clone of a GraphicObject
+        /// </summary>
+        /// <returns>A GraphicObject cloned from the original (this). It should have a new id assigned.</returns>
         public abstract GraphicObject Clone();
 
-        // Convert to a UIElement (eg. Line, Rectangle, TextBlock,...)
+        /// <summary>
+        /// Create a UIElement from a GraphicObject
+        /// </summary>
+        /// <returns>A UIElement (eg. Line, Rectangle, TextBlock,...) correspond to the type of GraphicObject.</returns>
         public abstract UIElement ConvertToUIElement();
 
-        // Update an existing UIElement in the canvas
+        /// <summary>
+        /// Update an existing UIElement in the canvas
+        /// </summary>
+        /// <param name="element">The UIElement associated to this GraphicObject. Make sure your subclasses match this UIElement's Tag to the GraphicObject's id before updating.</param>
         public abstract void UpdateUIElement(UIElement element);
     }
 

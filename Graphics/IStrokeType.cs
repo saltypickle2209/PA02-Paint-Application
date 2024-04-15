@@ -7,7 +7,9 @@ using System.Windows.Media;
 
 namespace Graphics
 {
-    // Defines the stroke type of a ShapeObject (eg. dashed line, dotted line,...)
+    /// <summary>
+    /// Defines the stroke type of a ShapeObject (eg. dashed line, dotted line,...)
+    /// </summary>
     public interface IStrokeType
     {
         DoubleCollection GetStrokeDashArray();

@@ -6,9 +6,13 @@ using System.Windows.Media;
 
 namespace Graphics
 {
+    /// <summary>
+    /// A TextObject contains every attribute needed to create a TextBlock, which is associated to a ShapeObject
+    /// in a parent-child relationship.
+    /// </summary>
     public class TextObject : GraphicObject
     {
-        // the ShapeObject this TextObject is associated to
+        // The ShapeObject this TextObject is associated to
         private ShapeObject _parent;
         private string _text;
         private SolidColorBrush _textColor;

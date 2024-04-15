@@ -3,6 +3,9 @@ using System.Windows.Media;
 
 namespace Graphics
 {
+    /// <summary>
+    /// A ShapeObject contains every attribute needed to create a Shape (System.Windows.Shape).
+    /// </summary>
     public abstract class ShapeObject : GraphicObject
     {
         // Base attributes of a ShapeObject
