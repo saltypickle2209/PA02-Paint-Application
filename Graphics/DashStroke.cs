@@ -18,5 +18,10 @@ namespace Graphics
         {
             return new DoubleCollection([4, 2]);
         }
+
+        public int GetPriority()
+        {
+            return 1;
+        }
     }
 }

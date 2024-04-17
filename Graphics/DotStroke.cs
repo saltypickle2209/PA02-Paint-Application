@@ -11,12 +11,17 @@ namespace Graphics
     {
         public PenLineCap GetPenLineCap()
         {
-            return PenLineCap.Flat;
+            return PenLineCap.Round;
         }
 
         public DoubleCollection GetStrokeDashArray()
         {
-            return new DoubleCollection([1, 3]);
+            return new DoubleCollection([0, 3]);
+        }
+
+        public int GetPriority()
+        {
+            return 1;
         }
     }
 }

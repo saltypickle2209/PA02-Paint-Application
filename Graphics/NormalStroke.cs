@@ -18,5 +18,10 @@ namespace Graphics
         {
             return [];
         }
+
+        public int GetPriority()
+        {
+            return 0;
+        }
     }
 }
