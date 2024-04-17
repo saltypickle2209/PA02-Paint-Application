@@ -15,5 +15,10 @@ namespace Factories
         {
             return "Arrow";
         }
+
+        public int GetPriority()
+        {
+            return 2;
+        }
     }
 }

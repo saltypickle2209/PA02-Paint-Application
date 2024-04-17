@@ -15,5 +15,10 @@ namespace Factories
         {
             return "Rectangle";
         }
+
+        public int GetPriority()
+        {
+            return 1;
+        }
     }
 }

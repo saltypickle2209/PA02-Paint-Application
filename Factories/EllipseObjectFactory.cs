@@ -15,5 +15,10 @@ namespace Factories
         {
             return "Ellipse";
         }
+
+        public int GetPriority()
+        {
+            return 1;
+        }
     }
 }

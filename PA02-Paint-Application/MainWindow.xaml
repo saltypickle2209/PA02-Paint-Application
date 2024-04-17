@@ -7,6 +7,20 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
     <Grid>
-        <Canvas x:Name="drawCanvas" Background="White"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <Menu>
+            <MenuItem Header="_File"/>
+        </Menu>
+
+        <ToolBarTray Grid.Row="1">
+            <ToolBar x:Name="ShapeToolBar"/>
+        </ToolBarTray>
+        
+        <Canvas x:Name="drawCanvas" Background="White" Grid.Row="2"/>
     </Grid>
 </Window>

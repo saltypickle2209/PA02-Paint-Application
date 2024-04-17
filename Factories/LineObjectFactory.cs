@@ -20,5 +20,10 @@ namespace Factories
         {
             return "Line";
         }
+
+        public int GetPriority()
+        {
+            return 0;
+        }
     }
 }

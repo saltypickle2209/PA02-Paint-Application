@@ -30,5 +30,13 @@ namespace Factories
         /// </summary>
         /// <returns>The string representing the factory's name</returns>
         string GetName();
+
+        /// <summary>
+        /// Get an int represent the priority, starting with 0. Used for initializing UI in MainWindow.
+        /// Lower priority means the RadioButton created in the MainWindow will be nearer to the beginning 
+        /// of a ToolBar.
+        /// </summary>
+        /// <returns></returns>
+        int GetPriority();
     }
 }
