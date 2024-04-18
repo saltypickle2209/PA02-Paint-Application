@@ -74,8 +74,8 @@ namespace Graphics
                 ellipse.Width = width;
                 ellipse.Height = height;
 
-                ellipse.SetValue(Canvas.LeftProperty, _startingPoint.X >= _endingPoint.X ? _startingPoint.X : _startingPoint.X - width);
-                ellipse.SetValue(Canvas.TopProperty, _startingPoint.Y >= _endingPoint.Y ? _startingPoint.Y : _startingPoint.Y - height);
+                ellipse.SetValue(Canvas.LeftProperty, _startingPoint.X < _endingPoint.X ? _startingPoint.X : _startingPoint.X - width);
+                ellipse.SetValue(Canvas.TopProperty, _startingPoint.Y < _endingPoint.Y ? _startingPoint.Y : _startingPoint.Y - height);
 
                 TransformGroup transformGroup = new TransformGroup();
                 transformGroup.Children.Add(new RotateTransform(_rotateAngle, width / 2, height / 2));

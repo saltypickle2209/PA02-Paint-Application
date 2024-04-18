@@ -1,13 +1,14 @@
 ﻿using Factories;
 using Graphics;
-using System.Windows;
-using System.Windows.Media;
-using System.Reflection;
-using System.Diagnostics;
-using System.Windows.Controls;
-using System.ComponentModel;
-using System.Collections.ObjectModel;
 using LayerManager;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 
 namespace PA02_Paint_Application
 {
@@ -37,7 +38,7 @@ namespace PA02_Paint_Application
         public SolidColorBrush CurrentBrushColor
         {
             get { return _currentBrushColor; }
-            set 
+            set
             {
                 _currentBrushColor = value;
                 Trace.WriteLine("Change brush's color to: " + value.ToString());
@@ -57,8 +58,8 @@ namespace PA02_Paint_Application
         public int CurrentBrushThickness
         {
             get { return _currentBrushThickness; }
-            set 
-            { 
+            set
+            {
                 _currentBrushThickness = value;
                 Trace.WriteLine("Change brush's thickness to: " + value.ToString());
                 OnPropertyChanged(nameof(CurrentBrushThickness));
@@ -90,7 +91,14 @@ namespace PA02_Paint_Application
             }
         }
 
-        #endregion
+        private Point _startingPoint;
+        private Point _endingPoint;
+        private bool _isPerfectShape = false;
+        private UIElement? _currentUIElement;
+        private GraphicObject? _currentGraphicObject;
+        private bool _isDrawing = false;
+
+        #endregion PROPERTY_DECLARATION
 
         public MainWindow()
         {
@@ -99,9 +107,10 @@ namespace PA02_Paint_Application
         }
 
         private LayerList _layerList;
-        public LayerList LayerList 
-        { 
-            get { return _layerList; } 
+
+        public LayerList LayerList
+        {
+            get { return _layerList; }
             set
             {
                 _layerList = value;
@@ -117,17 +126,10 @@ namespace PA02_Paint_Application
             LayerList.AddLayer(new Layer());
             LayerList.AddLayer(new Layer());
             LayerList.AddLayer(new Layer());
-
-            GraphicObject rectangle = new RectangleObject(new Point(100, 100), new Point(400, 200), Brushes.Red, 1, new NormalStroke(), 0, false, false, false);
-            drawCanvas.Children.Add(rectangle.ConvertToUIElement());
-            IShapeObjectFactory factory = new StarObjectFactory();
-            GraphicObject graphicObject = factory.CreateProduct(new Point(100, 100), new Point(200, 200), Brushes.Red, 5, new DashStroke(), 45, false, false, false);
-            drawCanvas.Children.Add(graphicObject.ConvertToUIElement());
-            GraphicObject textObject = new TextObject((ShapeObject)graphicObject, "Lorem ipsum dolor bla bla bla so long I love you moah moah", Brushes.Black, 12, "Meo", Brushes.Transparent);
-            drawCanvas.Children.Add(textObject.ConvertToUIElement());
         }
 
         #region UI_INITIALIZATION
+
         private void InitializeToolBar()
         {
             // Create ToolBar buttons
@@ -213,7 +215,7 @@ namespace PA02_Paint_Application
             BrushTypeComboBox.SelectedIndex = 0;
         }
 
-        #endregion
+        #endregion UI_INITIALIZATION
 
         private void ToolRadioButton_Checked(object sender, EventArgs e)
         {
@@ -236,6 +238,75 @@ namespace PA02_Paint_Application
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void drawCanvas_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (_currentTool == "Pen")
+            {
+                if (e.LeftButton == MouseButtonState.Pressed)
+                {
+                    _startingPoint = e.GetPosition(drawCanvas);
+                    _endingPoint = _startingPoint;
+                    _currentGraphicObject = _currentFactory!.CreateProduct(_startingPoint, _endingPoint, _currentBrushColor, _currentBrushThickness, _currentBrushType, 0, false, false, false);
+                    _currentUIElement = _currentGraphicObject.ConvertToUIElement();
+                    drawCanvas.Children.Add(_currentUIElement);
+                    _isDrawing = true;
+                }
+            }
+        }
+
+        private void drawCanvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_currentTool == "Pen" && _isDrawing)
+            {
+                if (e.LeftButton == MouseButtonState.Pressed)
+                {
+                    _endingPoint = e.GetPosition(drawCanvas);
+                    ((ShapeObject)_currentGraphicObject!).EndingPoint = _endingPoint;
+                    _currentGraphicObject.UpdateUIElement(_currentUIElement!);
+                }
+            }
+        }
+
+        private void drawCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_currentTool == "Pen" && _isDrawing)
+            {
+                if (e.LeftButton == MouseButtonState.Released)
+                {
+                    LayerList.GetCurrentLayer()!.AddItem(_currentGraphicObject!);
+                    _currentGraphicObject = null;
+                    _currentUIElement = null;
+                    _isDrawing = false;
+                }
+            }
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+            {
+                if (_isDrawing)
+                {
+                    _isPerfectShape = true;
+                    ((ShapeObject)_currentGraphicObject!).IsPerfectShape = _isPerfectShape;
+                    _currentGraphicObject.UpdateUIElement(_currentUIElement!);
+                }
+            }
+        }
+
+        private void Window_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+            {
+                if (_isDrawing)
+                {
+                    _isPerfectShape = false;
+                    ((ShapeObject)_currentGraphicObject!).IsPerfectShape = _isPerfectShape;
+                    _currentGraphicObject.UpdateUIElement(_currentUIElement!);
+                }
+            }
         }
     }
 }

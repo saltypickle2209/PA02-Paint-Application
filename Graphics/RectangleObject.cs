@@ -74,8 +74,8 @@ namespace Graphics
                 rectangle.Width = width;
                 rectangle.Height = height;
 
-                rectangle.SetValue(Canvas.LeftProperty, _startingPoint.X >= _endingPoint.X ? _startingPoint.X : _startingPoint.X - width);
-                rectangle.SetValue(Canvas.TopProperty, _startingPoint.Y >= _endingPoint.Y ? _startingPoint.Y : _startingPoint.Y - height);
+                rectangle.SetValue(Canvas.LeftProperty, _startingPoint.X < _endingPoint.X ? _startingPoint.X : _startingPoint.X - width);
+                rectangle.SetValue(Canvas.TopProperty, _startingPoint.Y < _endingPoint.Y ? _startingPoint.Y : _startingPoint.Y - height);
 
                 double centerX = (_startingPoint.X + _endingPoint.X) / 2;
                 double centerY = (_startingPoint.Y + _endingPoint.Y) / 2;
