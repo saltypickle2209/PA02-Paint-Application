@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:PA02_Paint_Application"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        
     </Application.Resources>
 </Application>

@@ -1,13 +1,15 @@
-﻿namespace LayerManager
+﻿using System.Collections.ObjectModel;
+
+namespace LayerManager
 {
 	/// <summary>
 	/// A LayerList contains a list of Layer objects, together with functions to add/delete layers.
 	/// </summary>
     public class LayerList
     {
-		private List<Layer> _layers;
+		private ObservableCollection<Layer> _layers;
 
-		public List<Layer> Layers
+		public ObservableCollection<Layer> Layers
 		{
 			get { return _layers; }
 			set { _layers = value; }
@@ -24,7 +26,7 @@
 
 		public LayerList()
 		{
-			_layers = new List<Layer>();
+			_layers = new ObservableCollection<Layer> ();
 			_currentLayerIndex = -1;
 		}
 
@@ -61,6 +63,7 @@
 		/// <param name="layer">The layer to be added</param>
 		public void AddLayer(Layer layer)
 		{
+			layer.Name = $"Layer {_currentLayerIndex + 1}";
 			_layers.Add(layer);
 
 			// After adding a new layer, immediately move to this layer

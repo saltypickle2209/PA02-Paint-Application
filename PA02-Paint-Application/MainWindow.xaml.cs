@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Windows.Controls;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
+using LayerManager;
 
 namespace PA02_Paint_Application
 {
@@ -18,6 +19,8 @@ namespace PA02_Paint_Application
         #region PROPERTY_DECLARATION
 
         public event PropertyChangedEventHandler? PropertyChanged;
+
+        private string _currentTool = "Pen";
 
         private List<IShapeObjectFactory> _factories = new List<IShapeObjectFactory>();
         private IShapeObjectFactory? _currentFactory = null;
@@ -95,9 +98,25 @@ namespace PA02_Paint_Application
             DataContext = this;
         }
 
+        private LayerList _layerList;
+        public LayerList LayerList 
+        { 
+            get { return _layerList; } 
+            set
+            {
+                _layerList = value;
+                OnPropertyChanged(nameof(LayerList));
+            }
+        }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             InitializeToolBar();
+
+            LayerList = new LayerList();
+            LayerList.AddLayer(new Layer());
+            LayerList.AddLayer(new Layer());
+            LayerList.AddLayer(new Layer());
 
             GraphicObject rectangle = new RectangleObject(new Point(100, 100), new Point(400, 200), Brushes.Red, 1, new NormalStroke(), 0, false, false, false);
             drawCanvas.Children.Add(rectangle.ConvertToUIElement());
@@ -108,6 +127,7 @@ namespace PA02_Paint_Application
             drawCanvas.Children.Add(textObject.ConvertToUIElement());
         }
 
+        #region UI_INITIALIZATION
         private void InitializeToolBar()
         {
             // Create ToolBar buttons
@@ -140,6 +160,7 @@ namespace PA02_Paint_Application
                 {
                     Tag = shapeObjectFactory,
                     IsChecked = i == 0,
+                    ToolTip = $"Draw a {shapeObjectFactory.GetName()}"
                 };
                 radioButton.Checked += ShapeRadioButton_Checked;
 
@@ -192,10 +213,24 @@ namespace PA02_Paint_Application
             BrushTypeComboBox.SelectedIndex = 0;
         }
 
+        #endregion
+
+        private void ToolRadioButton_Checked(object sender, EventArgs e)
+        {
+            _currentTool = (string)(sender as RadioButton)!.Tag;
+            Trace.WriteLine("Current tool: " + _currentTool);
+        }
+
         private void ShapeRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             _currentFactory = (IShapeObjectFactory)(sender as RadioButton)!.Tag;
-            Trace.WriteLine("Current tool: " + _currentFactory.GetName());
+            Trace.WriteLine("Current shape: " + _currentFactory.GetName());
+        }
+
+        private void LayerRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            LayerList.CurrentLayerIndex = (int)(sender as RadioButton)!.Tag;
+            Trace.WriteLine("Current layer: " + LayerList.CurrentLayerIndex.ToString());
         }
 
         protected void OnPropertyChanged(string propertyName)

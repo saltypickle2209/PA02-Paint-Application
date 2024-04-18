@@ -10,10 +10,30 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Icons\delete.ico" />
+    <None Remove="Icons\pen.ico" />
+    <None Remove="Icons\plus.ico" />
+    <None Remove="Icons\selection-box.ico" />
+    <None Remove="Icons\selection.ico" />
+    <None Remove="Icons\text.ico" />
+    <None Remove="Icons\undo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Factories\Factories.csproj" />
     <ProjectReference Include="..\Graphics\Graphics.csproj" />
     <ProjectReference Include="..\LayerManager\LayerManager.csproj" />
     <ProjectReference Include="..\Memento\Memento.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Icons\delete.ico" />
+    <Resource Include="Icons\pen.ico" />
+    <Resource Include="Icons\plus.ico" />
+    <Resource Include="Icons\selection-box.ico" />
+    <Resource Include="Icons\selection.ico" />
+    <Resource Include="Icons\text.ico" />
+    <Resource Include="Icons\undo.ico" />
   </ItemGroup>
 
 </Project>

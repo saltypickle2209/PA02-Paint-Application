@@ -6,10 +6,13 @@
         xmlns:local="clr-namespace:PA02_Paint_Application"
         xmlns:converter="clr-namespace:PA02_Paint_Application.Converters"
         mc:Ignorable="d"
+        WindowState="Maximized"
         Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
     <Window.Resources>
         <converter:IStrokeTypeToStrokeDashArrayConverter x:Key="IStrokeTypeToStrokeDashArrayConverter"/>
         <converter:IStrokeTypeToPenLineCapConverter x:Key="IStrokeTypeToPenLineCapConverter"/>
+        <converter:LayerToIsCheckedConverter x:Key="LayerToIsCheckedConverter"/>
+        <converter:LayerToTagConverter x:Key="LayerToTagConverter"/>
     </Window.Resources>
     
     <Grid>
@@ -24,13 +27,57 @@
         </Menu>
 
         <ToolBarTray Grid.Row="1">
+            <!-- UNDO/REDO -->
+            <ToolBar>
+                <Button x:Name="UndoBtn" MinWidth="32" MinHeight="32" ToolTip="Undo the previous action">
+                    <Image Source="Icons\undo.ico"  Width="24">
+                        <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
+                    </Image>
+                </Button>
+                <Button x:Name="RedoBtn" MinWidth="32" MinHeight="32" ToolTip="Redo the previous action">
+                    <Image Source="Icons\undo.ico"  Width="24">
+                        <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
+                        <Image.RenderTransform>
+                            <ScaleTransform ScaleX="-1" CenterX="12" />
+                        </Image.RenderTransform>
+                    </Image>
+                </Button>
+            </ToolBar>
+            
+            <!-- TOOL SELECTION -->
+            <ToolBar>
+                <RadioButton Tag="Pen" MinWidth="32" MinHeight="32" ToolTip="Change to pen tool" IsChecked="True" Checked="ToolRadioButton_Checked">
+                    <Image Source="Icons\pen.ico" Width="24">
+                        <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
+                    </Image>
+                </RadioButton>
+                <RadioButton Tag="Text" MinWidth="32" MinHeight="32" ToolTip="Change to text tool" Checked="ToolRadioButton_Checked">
+                    <Image Source="Icons\text.ico" Width="24">
+                        <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
+                    </Image>
+                </RadioButton>
+                <RadioButton Tag="SingleSelection" MinWidth="32" MinHeight="32" ToolTip="Change to single selection tool" Checked="ToolRadioButton_Checked">
+                    <Image Source="Icons\selection.ico" Width="24">
+                        <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
+                    </Image>
+                </RadioButton>
+                <RadioButton Tag="MultipleSelection" MinWidth="32" MinHeight="32" ToolTip="Change to multiple selection tool" Checked="ToolRadioButton_Checked">
+                    <Image Source="Icons\selection-box.ico" Width="24">
+                        <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
+                    </Image>
+                </RadioButton>
+            </ToolBar>
+
+            <!-- SHAPE SELECTOR -->
             <ToolBar x:Name="ShapeToolBar"/>
+            
             <!-- BRUSH SELECTOR -->
             <ToolBar>
                 <StackPanel Orientation="Vertical" Margin="4,0,0,0">
                     <TextBlock Text="Stroke's Color" FontSize="10"/>
                     <ComboBox ItemsSource="{Binding BrushColors}"
-                              SelectedItem="{Binding CurrentBrushColor, Mode=TwoWay}">
+                              SelectedItem="{Binding CurrentBrushColor, Mode=TwoWay}"
+                              ToolTip="Change the brush's color">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <Canvas Height="16" Width="64">
@@ -46,7 +93,8 @@
                 <StackPanel Orientation="Vertical" Margin="4,0,0,0">
                     <TextBlock Text="Stroke's Thickness" FontSize="10"/>
                     <ComboBox ItemsSource="{Binding BrushThicknesses}"
-                              SelectedItem="{Binding CurrentBrushThickness, Mode=TwoWay}">
+                              SelectedItem="{Binding CurrentBrushThickness, Mode=TwoWay}"
+                              ToolTip="Change the brush's thickness">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
@@ -66,7 +114,8 @@
                     <TextBlock Text="Stroke's Type" FontSize="10"/>
                     <ComboBox x:Name="BrushTypeComboBox"
                               ItemsSource="{Binding BrushTypes}"
-                              SelectedItem="{Binding CurrentBrushType, Mode=TwoWay}">
+                              SelectedItem="{Binding CurrentBrushType, Mode=TwoWay}"
+                              ToolTip="Change the brush's type">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <Canvas Height="16" Width="64">
@@ -83,7 +132,111 @@
             </ToolBar>
         </ToolBarTray>
 
-        <Canvas x:Name="drawCanvas" Background="White" Grid.Row="2"/>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="160"/>
+            </Grid.ColumnDefinitions>
+
+            <Canvas x:Name="drawCanvas" Background="White" />
+
+            <!-- LAYER MANAGER -->
+            <Border Grid.Column="1" BorderBrush="LightSlateGray" BorderThickness="1,0,0,0" >
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Layers" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                        
+                        <Button x:Name="AddLayeBtn" Grid.Column="1" MinWidth="24" MinHeight="24" ToolTip="Add a new layer" 
+                                Background="Transparent" BorderBrush="{x:Null}">
+                            <Image Source="Icons\plus.ico" Width="16">
+                                <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
+                            </Image>
+                        </Button>
+
+                        <Button x:Name="DeleteLayerBtn" Grid.Column="2" MinWidth="24" MinHeight="24" ToolTip="Delete currently selected layer" 
+                                Background="Transparent" BorderBrush="{x:Null}">
+                            <Image Source="Icons\delete.ico" Width="16">
+                                <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
+                            </Image>
+                        </Button>
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding LayerList.Layers}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <RadioButton Content="{Binding Name}" Height="50" GroupName="LayerRadioButtons" Checked="LayerRadioButton_Checked">
+                                        <RadioButton.Tag>
+                                            <MultiBinding Converter="{StaticResource LayerToTagConverter}" Mode="OneWay">
+                                                <Binding Path="."/>
+                                                <Binding Path="DataContext.LayerList">
+                                                    <Binding.RelativeSource>
+                                                        <RelativeSource Mode="FindAncestor" AncestorType="{x:Type Window}"/>
+                                                    </Binding.RelativeSource>
+                                                </Binding>
+                                            </MultiBinding>
+                                        </RadioButton.Tag>
+                                        <RadioButton.Style>
+                                            <Style BasedOn="{StaticResource {x:Type ToggleButton}}"
+                                                   TargetType="RadioButton">
+                                                <Style.Setters>
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="RadioButton">
+                                                                <Border Background="{TemplateBinding Background}" BorderBrush="Black" BorderThickness="0,0,0,1">
+                                                                    <Grid>
+                                                                        <TextBlock Text="{TemplateBinding Property=Content}" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                                                    </Grid>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+
+                                                    <Setter Property="Background" Value="White"/>
+                                                    <Setter Property="BorderThickness" Value="0"/>
+                                                </Style.Setters>
+
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsChecked" Value="True">
+                                                        <Setter Property="Background" Value="PowderBlue"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </RadioButton.Style>
+                                        <RadioButton.IsChecked>
+                                            <MultiBinding Converter="{StaticResource LayerToIsCheckedConverter}" Mode="OneWay">
+                                                <Binding Path="."/>
+                                                <Binding Path="DataContext.LayerList">
+                                                    <Binding.RelativeSource>
+                                                        <RelativeSource Mode="FindAncestor" AncestorType="{x:Type Window}"/>
+                                                    </Binding.RelativeSource>
+                                                </Binding>
+                                            </MultiBinding>
+                                        </RadioButton.IsChecked>
+                                    </RadioButton>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
 
     </Grid>
 </Window>
