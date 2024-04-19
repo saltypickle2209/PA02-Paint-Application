@@ -67,10 +67,10 @@ namespace Graphics
             // Align the TextBlock to be in the center of its parent
             textBlock.SetValue(Canvas.LeftProperty, _parent.StartingPoint.X < _parent.EndingPoint.X ?
                 _parent.StartingPoint.X + parentWidth / 2 - ((TextBlock)textBlock).DesiredSize.Width / 2 :
-                _parent.StartingPoint.X - parentWidth / 2 + ((TextBlock)textBlock).DesiredSize.Width / 2);
+                _parent.StartingPoint.X - parentWidth / 2 - ((TextBlock)textBlock).DesiredSize.Width / 2);
             textBlock.SetValue(Canvas.TopProperty, _parent.StartingPoint.Y < _parent.EndingPoint.Y ? 
                 _parent.StartingPoint.Y + parentHeight / 2 - ((TextBlock)textBlock).DesiredSize.Height / 2 :
-                _parent.StartingPoint.Y - parentHeight / 2 + ((TextBlock)textBlock).DesiredSize.Height / 2);
+                _parent.StartingPoint.Y - parentHeight / 2 - ((TextBlock)textBlock).DesiredSize.Height / 2);
             
             return textBlock;
         }

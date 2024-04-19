@@ -343,6 +343,8 @@ namespace PA02_Paint_Application
                         _textToolBar.SetValue(Canvas.LeftProperty, centerX- _textToolBar.ActualWidth / 2);
                         _textToolBar.SetValue(Canvas.TopProperty, centerY - _textToolBar.ActualHeight);
                         _textToolBar.Visibility = Visibility.Visible;
+
+                        TextToolBarTextBox.Focus();
                     }
                 }
             }

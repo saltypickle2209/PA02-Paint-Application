@@ -82,6 +82,9 @@ namespace Graphics
                 star.SetValue(Canvas.LeftProperty, _startingPoint.X < _endingPoint.X ? _startingPoint.X : _startingPoint.X - width);
                 star.SetValue(Canvas.TopProperty, _startingPoint.Y < _endingPoint.Y ? _startingPoint.Y : _startingPoint.Y - height);
 
+                _isHorizontallyFlipped = _startingPoint.X > _endingPoint.X;
+                _isVerticallyFlipped = _startingPoint.Y > _endingPoint.Y;
+
                 TransformGroup transformGroup = new TransformGroup();
                 transformGroup.Children.Add(new RotateTransform(_rotateAngle, width / 2, height / 2));
                 transformGroup.Children.Add(new ScaleTransform(
