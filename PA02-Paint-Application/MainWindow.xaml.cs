@@ -9,6 +9,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 namespace PA02_Paint_Application
 {
@@ -136,8 +138,8 @@ namespace PA02_Paint_Application
         public FontFamily CurrentTextFont
         {
             get { return _currentTextFont; }
-            set 
-            { 
+            set
+            {
                 _currentTextFont = value;
                 Trace.WriteLine("Change text's font to: " + value.Source);
                 OnPropertyChanged(nameof(CurrentTextFont));
@@ -166,6 +168,9 @@ namespace PA02_Paint_Application
         private UIElement? _currentUIElement;
         private GraphicObject? _currentGraphicObject;
         private bool _isDrawing = false;
+
+        private List<GraphicObject> _clipboard = new List<GraphicObject>();
+        private List<GraphicObject>? _tempMem = null;
 
         #endregion PROPERTY_DECLARATION
 
@@ -291,9 +296,16 @@ namespace PA02_Paint_Application
         {
             _currentTool = (string)(sender as RadioButton)!.Tag;
             Trace.WriteLine("Current tool: " + _currentTool);
-            if(_currentTool != "Text" && _textToolBar != null)
+            if (_currentTool != "Text" && _textToolBar != null)
             {
                 _textToolBar.Visibility = Visibility.Hidden;
+            }
+            if (_currentTool != "MultipleSelection" && _currentGraphicObject != null)
+            {
+                drawCanvas.Children.Remove(_currentUIElement);
+                _currentGraphicObject = null;
+                _currentUIElement = null;
+                _tempMem = null;
             }
         }
 
@@ -307,6 +319,13 @@ namespace PA02_Paint_Application
         {
             LayerList.CurrentLayerIndex = (int)(sender as RadioButton)!.Tag;
             Trace.WriteLine("Current layer: " + LayerList.CurrentLayerIndex.ToString());
+            if (_currentTool == "MultipleSelection" && _currentGraphicObject != null)
+            {
+                drawCanvas.Children.Remove(_currentUIElement);
+                _currentGraphicObject = null;
+                _currentUIElement = null;
+                _tempMem = null;
+            }
         }
 
         protected void OnPropertyChanged(string propertyName)
@@ -334,13 +353,13 @@ namespace PA02_Paint_Application
                 {
                     _startingPoint = e.GetPosition(drawCanvas);
                     _currentGraphicObject = LayerList.GetCurrentLayer()?.FindItem(_startingPoint);
-                    if(_currentGraphicObject != null)
+                    if (_currentGraphicObject != null)
                     {
                         ShapeObject shapeObject = (ShapeObject)_currentGraphicObject;
                         double centerX = (shapeObject.StartingPoint.X + shapeObject.EndingPoint.X) / 2;
                         double centerY = (shapeObject.StartingPoint.Y + shapeObject.EndingPoint.Y) / 2;
 
-                        _textToolBar.SetValue(Canvas.LeftProperty, centerX- _textToolBar.ActualWidth / 2);
+                        _textToolBar.SetValue(Canvas.LeftProperty, centerX - _textToolBar.ActualWidth / 2);
                         _textToolBar.SetValue(Canvas.TopProperty, centerY - _textToolBar.ActualHeight);
                         _textToolBar.Visibility = Visibility.Visible;
 
@@ -348,11 +367,34 @@ namespace PA02_Paint_Application
                     }
                 }
             }
+            else if (_currentTool == "MultipleSelection")
+            {
+                if (e.LeftButton == MouseButtonState.Pressed)
+                {
+                    // Check for pre-existed selection area
+                    if (_currentGraphicObject != null)
+                    {
+                        drawCanvas.Children.Remove(_currentUIElement);
+                        _currentGraphicObject = null;
+                        _currentUIElement = null;
+                        _tempMem = null;
+                    }
+
+                    _startingPoint = e.GetPosition(drawCanvas);
+                    _endingPoint = _startingPoint;
+                    _currentGraphicObject = new RectangleObject(_startingPoint, _endingPoint, Brushes.Blue, 1, new NormalStroke(), 0, false, false, false);
+                    _currentUIElement = _currentGraphicObject.ConvertToUIElement();
+                    _currentUIElement.Opacity = 0.3f;
+                    ((Rectangle)_currentUIElement).Fill = Brushes.LightBlue;
+                    drawCanvas.Children.Add(_currentUIElement);
+                    _isDrawing = true;
+                }
+            }
         }
 
         private void drawCanvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (_currentTool == "Pen" && _isDrawing)
+            if ((_currentTool == "Pen" || _currentTool == "MultipleSelection") && _isDrawing)
             {
                 if (e.LeftButton == MouseButtonState.Pressed)
                 {
@@ -363,7 +405,7 @@ namespace PA02_Paint_Application
             }
         }
 
-        private void drawCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+        private async void drawCanvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (_currentTool == "Pen" && _isDrawing)
             {
@@ -373,15 +415,64 @@ namespace PA02_Paint_Application
                     _currentGraphicObject = null;
                     _currentUIElement = null;
                     _isDrawing = false;
+                    RedrawAll();
                 }
             }
+            else if (_currentTool == "MultipleSelection" && _isDrawing)
+            {
+                if (e.LeftButton == MouseButtonState.Released)
+                {
+                    drawCanvas.Children.Remove(_currentUIElement!);
+                    _currentGraphicObject = null;
+                    _currentUIElement = null;
+                    _isDrawing = false;
+
+                    CaptureAreaToClipboard(_startingPoint, _endingPoint);
+
+                    _tempMem = LayerList.GetCurrentLayer()!.FindItemInRange(_startingPoint, _endingPoint);
+                    if (_tempMem.Count != 0)
+                    {
+                        (Point TopPoint, Point BottomPoint) bounds = ((Point, Point))LayerList.GetBounds(_tempMem);
+                        _currentGraphicObject = new RectangleObject(bounds.TopPoint, bounds.BottomPoint, Brushes.Blue, 1, new DashStroke(), 0, false, false, false);
+                        _currentUIElement = _currentGraphicObject.ConvertToUIElement();
+                        _currentUIElement.Opacity = 0.3f;
+                        ((Rectangle)_currentUIElement).Fill = Brushes.LightBlue;
+                        drawCanvas.Children.Add(_currentUIElement);
+                    }
+                }
+            }
+        }
+
+        private void CaptureAreaToClipboard(Point startingPoint, Point endingPoint)
+        {
+            double x = Math.Min(startingPoint.X, endingPoint.X);
+            double y = Math.Min(startingPoint.Y, endingPoint.Y);
+            double width = Math.Abs(startingPoint.X - endingPoint.X);
+            double height = Math.Abs(startingPoint.Y - endingPoint.Y);
+
+            RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap(
+                (int)width,
+                (int)height,
+                96d, 96d,
+                PixelFormats.Pbgra32);
+
+            DrawingVisual drawingVisual = new DrawingVisual();
+            using (DrawingContext drawingContext = drawingVisual.RenderOpen())
+            {
+                VisualBrush brush = new VisualBrush(drawCanvas);
+
+                drawingContext.DrawRectangle(brush, null, new Rect(new Point(-x, -y), new Size(drawCanvas.ActualWidth, drawCanvas.ActualHeight)));
+            }
+
+            renderTargetBitmap.Render(drawingVisual);
+            Clipboard.SetImage(renderTargetBitmap);
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
             {
-                if (_isDrawing)
+                if (_isDrawing && _currentTool == "Pen")
                 {
                     _isPerfectShape = true;
                     ((ShapeObject)_currentGraphicObject!).IsPerfectShape = _isPerfectShape;
@@ -394,11 +485,25 @@ namespace PA02_Paint_Application
         {
             if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
             {
-                if (_isDrawing)
+                if (_isDrawing && _currentTool == "Pen")
                 {
                     _isPerfectShape = false;
                     ((ShapeObject)_currentGraphicObject!).IsPerfectShape = _isPerfectShape;
                     _currentGraphicObject.UpdateUIElement(_currentUIElement!);
+                }
+            }
+        }
+
+        private void RedrawAll()
+        {
+            drawCanvas.Children.Clear();
+            drawCanvas.Children.Add(_textToolBar);
+
+            foreach (Layer layer in LayerList.Layers)
+            {
+                foreach (GraphicObject graphicObject in layer.GraphicObjectList)
+                {
+                    drawCanvas.Children.Add(graphicObject.ConvertToUIElement());
                 }
             }
         }
@@ -408,7 +513,7 @@ namespace PA02_Paint_Application
             if (e.Key == Key.Enter)
             {
                 string currentText = TextToolBarTextBox.Text;
-                if(currentText != String.Empty)
+                if (currentText != String.Empty)
                 {
                     TextToolBarTextBox.Text = String.Empty;
                     _textToolBar.Visibility = Visibility.Hidden;
@@ -418,6 +523,77 @@ namespace PA02_Paint_Application
                     LayerList.GetCurrentLayer()?.AddItem(textObject);
                 }
             }
+        }
+
+        public static RoutedCommand CopyCommand = new RoutedCommand();
+
+        private void CopyEvent(object sender, RoutedEventArgs e)
+        {
+            if (_currentTool == "MultipleSelection" && _tempMem != null && _tempMem.Count != 0)
+            {
+                Trace.WriteLine("Copy");
+                _clipboard.Clear();
+                _clipboard.AddRange(_tempMem);
+            }
+        }
+
+        public static RoutedCommand CutCommand = new RoutedCommand();
+
+        private void CutEvent(object sender, RoutedEventArgs e)
+        {
+            if (_currentTool == "MultipleSelection" && _tempMem != null && _tempMem.Count != 0)
+            {
+                Trace.WriteLine("Cut");
+                _clipboard.Clear();
+                _clipboard.AddRange(_tempMem);
+
+                LayerList.GetCurrentLayer()?.RemoveItems(_clipboard);
+                RedrawAll();
+            }
+        }
+
+        public static RoutedCommand PasteCommand = new RoutedCommand();
+
+        private void PasteEvent(object sender,  RoutedEventArgs e) 
+        {
+            if(_clipboard.Count != 0)
+            {
+                Trace.WriteLine("Paste");
+                List<GraphicObject> shapeObjects = new List<GraphicObject>(_clipboard.Where(graphicObject => graphicObject is ShapeObject));
+                List<GraphicObject> textObjects = new List<GraphicObject>(_clipboard.Where(graphicObject => graphicObject is TextObject));
+
+                List<GraphicObject> copiedGraphicObjects = new List<GraphicObject>();
+                foreach (GraphicObject graphicObject in shapeObjects)
+                {
+                    GraphicObject copiedGraphicObject = graphicObject.Clone();
+                    copiedGraphicObjects.Add(copiedGraphicObject);
+
+                    foreach (GraphicObject textObject in textObjects)
+                    {
+                        if(((TextObject)textObject).Parent == graphicObject)
+                        {
+                            GraphicObject copiedTextObject = ((TextObject)textObject).DeepClone((ShapeObject)copiedGraphicObject);
+                            copiedGraphicObjects.Add(copiedTextObject);
+                        }
+                    }
+                }
+
+                LayerList.GetCurrentLayer()?.AddItems(copiedGraphicObjects);
+                RedrawAll();
+                _clipboard.Clear();
+                _clipboard.AddRange(copiedGraphicObjects);
+            }
+        }
+
+        private void AddLayeBtn_Click(object sender, RoutedEventArgs e)
+        {
+            LayerList.AddLayer(new Layer());
+        }
+
+        private void DeleteLayerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            LayerList.RemoveLayer(LayerList.CurrentLayerIndex);
+            RedrawAll();
         }
     }
 }

@@ -14,6 +14,18 @@
         <converter:LayerToIsCheckedConverter x:Key="LayerToIsCheckedConverter"/>
         <converter:LayerToTagConverter x:Key="LayerToTagConverter"/>
     </Window.Resources>
+
+    <Window.CommandBindings>
+        <CommandBinding Command="local:MainWindow.CopyCommand" Executed="CopyEvent"/>
+        <CommandBinding Command="local:MainWindow.CutCommand" Executed="CutEvent"/>
+        <CommandBinding Command="local:MainWindow.PasteCommand" Executed="PasteEvent"/>
+    </Window.CommandBindings>
+
+    <Window.InputBindings>
+        <KeyBinding Key="C" Modifiers="Ctrl" Command="local:MainWindow.CopyCommand"/>
+        <KeyBinding Key="X" Modifiers="Ctrl" Command="local:MainWindow.CutCommand"/>
+        <KeyBinding Key="V" Modifiers="Ctrl" Command="local:MainWindow.PasteCommand"/>
+    </Window.InputBindings>
     
     <Grid>
         <Grid.RowDefinitions>
@@ -240,14 +252,14 @@
                         <TextBlock Text="Layers" Margin="4,0,0,0" VerticalAlignment="Center"/>
                         
                         <Button x:Name="AddLayeBtn" Grid.Column="1" MinWidth="24" MinHeight="24" ToolTip="Add a new layer" 
-                                Background="Transparent" BorderBrush="{x:Null}">
+                                Background="Transparent" BorderBrush="{x:Null}" Click="AddLayeBtn_Click">
                             <Image Source="Icons\plus.ico" Width="16">
                                 <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
                             </Image>
                         </Button>
 
                         <Button x:Name="DeleteLayerBtn" Grid.Column="2" MinWidth="24" MinHeight="24" ToolTip="Delete currently selected layer" 
-                                Background="Transparent" BorderBrush="{x:Null}">
+                                Background="Transparent" BorderBrush="{x:Null}" Click="DeleteLayerBtn_Click">
                             <Image Source="Icons\delete.ico" Width="16">
                                 <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
                             </Image>

@@ -14,6 +14,13 @@ namespace Graphics
     {
         // The ShapeObject this TextObject is associated to
         private ShapeObject _parent;
+
+        public ShapeObject Parent
+        {
+            get { return _parent; }
+            set { _parent = value; }
+        }
+
         private string _text;
         private SolidColorBrush _textColor;
         private int _textSize;
@@ -37,6 +44,15 @@ namespace Graphics
             // Assign a new ID
             graphicObject.Id = Guid.NewGuid().ToString();
 
+            return graphicObject;
+        }
+
+        public GraphicObject DeepClone(ShapeObject parent)
+        {
+            GraphicObject graphicObject = (GraphicObject)this.MemberwiseClone();
+
+            ((TextObject)graphicObject).Parent = parent;
+            graphicObject.Id = Guid.NewGuid().ToString();
             return graphicObject;
         }
 

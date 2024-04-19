@@ -1,4 +1,6 @@
-﻿using System.Collections.ObjectModel;
+﻿using Graphics;
+using System.Collections.ObjectModel;
+using System.Windows;
 
 namespace LayerManager
 {
@@ -101,5 +103,41 @@ namespace LayerManager
 					_currentLayerIndex--;
 			}
 		}
-	}
+
+
+        /// <summary>
+        /// Get a tuple of two points that represent the bound of the selected area
+        /// </summary>
+        /// <param name="graphicObjects">The list of GraphicObjects selected</param>
+        /// <returns>A tuple of two Point objects</returns>
+        public static object GetBounds(List<GraphicObject> graphicObjects)
+        {
+			double topX = double.PositiveInfinity;
+			double topY = double.PositiveInfinity;
+			double bottomX = double.NegativeInfinity;
+			double bottomY = double.NegativeInfinity;
+
+			foreach (GraphicObject graphicObject in graphicObjects)
+			{
+				if (graphicObject is ShapeObject shapeObject)
+				{
+                    double minX = Math.Min(shapeObject.StartingPoint.X, shapeObject.EndingPoint.X);
+                    double minY = Math.Min(shapeObject.StartingPoint.Y, shapeObject.EndingPoint.Y);
+                    double maxX = Math.Max(shapeObject.StartingPoint.X, shapeObject.EndingPoint.X);
+                    double maxY = Math.Max(shapeObject.StartingPoint.Y, shapeObject.EndingPoint.Y);
+
+					if(minX < topX)
+						topX = minX;
+					if (minY < topY)
+						topY = minY;
+					if(maxX > bottomX)
+						bottomX = maxX;
+					if(maxY > bottomY)
+						bottomY = maxY;
+                }
+			}
+
+			return (new Point(topX, topY), new Point(bottomX, bottomY));
+        }
+    }
 }

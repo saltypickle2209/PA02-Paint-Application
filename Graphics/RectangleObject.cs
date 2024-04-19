@@ -16,6 +16,9 @@ namespace Graphics
         {
             GraphicObject graphicObject = (GraphicObject)this.MemberwiseClone();
 
+            ((ShapeObject)graphicObject).StartingPoint = new Point(StartingPoint.X + 10, StartingPoint.Y + 10);
+            ((ShapeObject)graphicObject).EndingPoint = new Point(EndingPoint.X + 10, EndingPoint.Y + 10);
+
             // Assign a new ID
             graphicObject.Id = Guid.NewGuid().ToString();
 

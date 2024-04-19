@@ -77,6 +77,9 @@ namespace LayerManager
 		/// <returns>A single GraphicObject</returns>
 		public GraphicObject? FindItem(Point point)
 		{
+			GraphicObject? foundObject = null;
+			double lowestXYDiff = double.PositiveInfinity;
+
 			foreach(GraphicObject graphicObject in _graphicObjectList)
 			{
 				if(graphicObject is ShapeObject shapeObject)
@@ -87,10 +90,64 @@ namespace LayerManager
                     double maxY = Math.Max(shapeObject.StartingPoint.Y, shapeObject.EndingPoint.Y);
 
 					if (point.X >= minX && point.X <= maxX && point.Y >= minY && point.Y <= maxY)
-						return graphicObject;
+					{
+						double xYDiff = Math.Abs(Math.Abs((maxX - point.X) - (point.X - minX)) - Math.Abs((maxY - point.Y) - (point.Y - minY)));
+
+                        if (xYDiff < lowestXYDiff)
+						{
+							foundObject = graphicObject;
+							lowestXYDiff = xYDiff;
+						}
+					}
                 }
 			}
-			return null;
+			return foundObject;
+		}
+
+        /// <summary>
+        /// Find a list of GraphicObjects that are in the rectangle bound drawn by 2 given point
+        /// </summary>
+        /// <param name="startingPoint">The starting point of the bound</param>
+        /// <param name="endingPoint">The ending point of the bound</param>
+        /// <returns>A list of GraphicObjects</returns>
+        public List<GraphicObject> FindItemInRange(Point startingPoint, Point endingPoint)
+		{
+			double selectionMinX = Math.Min(startingPoint.X, endingPoint.X);
+            double selectionMinY = Math.Min(startingPoint.Y, endingPoint.Y);
+            double selectionMaxX = Math.Max(startingPoint.X, endingPoint.X);
+            double selectionMaxY = Math.Max(startingPoint.Y, endingPoint.Y);
+
+            List<GraphicObject> graphicObjects = new List<GraphicObject>();
+
+			foreach (GraphicObject graphicObject in _graphicObjectList)
+			{
+				if (graphicObject is ShapeObject shapeObject)
+                {
+                    double minX = Math.Min(shapeObject.StartingPoint.X, shapeObject.EndingPoint.X);
+                    double minY = Math.Min(shapeObject.StartingPoint.Y, shapeObject.EndingPoint.Y);
+                    double maxX = Math.Max(shapeObject.StartingPoint.X, shapeObject.EndingPoint.X);
+                    double maxY = Math.Max(shapeObject.StartingPoint.Y, shapeObject.EndingPoint.Y);
+
+					bool xOverlap = selectionMinX < maxX && selectionMaxX > minX;
+					bool yOverlap = selectionMinY < maxY && selectionMaxY > minY;
+
+					if(xOverlap && yOverlap)
+					{
+						graphicObjects.Add(graphicObject);
+					}
+                }
+				// Supposing ShapeObject must be drawn first before a TextObject associated to that ShapeObject
+				// is created
+				else if (graphicObject is TextObject textObject)
+				{
+					if (graphicObjects.Contains(textObject.Parent))
+					{
+						graphicObjects.Add(graphicObject);
+					}
+				}
+            }
+
+			return graphicObjects;
 		}
 	}
 }
