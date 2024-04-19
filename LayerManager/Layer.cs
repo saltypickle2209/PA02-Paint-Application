@@ -1,4 +1,5 @@
 using Graphics;
+using System.Windows;
 
 namespace LayerManager
 {
@@ -67,6 +68,29 @@ namespace LayerManager
 				if(GraphicObjectList.Contains(graphicObject))
 					GraphicObjectList.Remove(graphicObject);
 			});
+		}
+
+		/// <summary>
+		/// Find a GraphicObject whose bounds contain a given point
+		/// </summary>
+		/// <param name="point">The 2D point used to find an item</param>
+		/// <returns>A single GraphicObject</returns>
+		public GraphicObject? FindItem(Point point)
+		{
+			foreach(GraphicObject graphicObject in _graphicObjectList)
+			{
+				if(graphicObject is ShapeObject shapeObject)
+				{
+					double minX = Math.Min(shapeObject.StartingPoint.X, shapeObject.EndingPoint.X);
+                    double minY = Math.Min(shapeObject.StartingPoint.Y, shapeObject.EndingPoint.Y);
+                    double maxX = Math.Max(shapeObject.StartingPoint.X, shapeObject.EndingPoint.X);
+                    double maxY = Math.Max(shapeObject.StartingPoint.Y, shapeObject.EndingPoint.Y);
+
+					if (point.X >= minX && point.X <= maxX && point.Y >= minY && point.Y <= maxY)
+						return graphicObject;
+                }
+			}
+			return null;
 		}
 	}
 }

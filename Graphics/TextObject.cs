@@ -17,10 +17,10 @@ namespace Graphics
         private string _text;
         private SolidColorBrush _textColor;
         private int _textSize;
-        private string _textFont;
+        private FontFamily _textFont;
         private SolidColorBrush _backgroundColor;
 
-        public TextObject(ShapeObject parent, string text, SolidColorBrush textColor, int textSize, string textFont, SolidColorBrush backgroundColor) : base() 
+        public TextObject(ShapeObject parent, string text, SolidColorBrush textColor, int textSize, FontFamily textFont, SolidColorBrush backgroundColor) : base() 
         {
             _parent = parent;
             _text = text;
@@ -50,13 +50,14 @@ namespace Graphics
 
             UIElement textBlock = new TextBlock
             {
-                Width = parentWidth,
+                MaxWidth = parentWidth,
+                MaxHeight = parentHeight,
                 Text = _text,
                 Foreground = _textColor,
                 TextWrapping = TextWrapping.Wrap,
                 TextAlignment = TextAlignment.Center,
                 FontSize = _textSize,
-                FontFamily = new FontFamily("Arial"),
+                FontFamily = _textFont,
                 Background = _backgroundColor,
                 Tag = _id
             };
@@ -65,8 +66,8 @@ namespace Graphics
 
             // Align the TextBlock to be in the center of its parent
             textBlock.SetValue(Canvas.LeftProperty, _parent.StartingPoint.X < _parent.EndingPoint.X ?
-                _parent.StartingPoint.X + parentWidth / 2 - ((TextBlock)textBlock).Width / 2 :
-                _parent.StartingPoint.X - parentWidth / 2 + ((TextBlock)textBlock).Width / 2);
+                _parent.StartingPoint.X + parentWidth / 2 - ((TextBlock)textBlock).DesiredSize.Width / 2 :
+                _parent.StartingPoint.X - parentWidth / 2 + ((TextBlock)textBlock).DesiredSize.Width / 2);
             textBlock.SetValue(Canvas.TopProperty, _parent.StartingPoint.Y < _parent.EndingPoint.Y ? 
                 _parent.StartingPoint.Y + parentHeight / 2 - ((TextBlock)textBlock).DesiredSize.Height / 2 :
                 _parent.StartingPoint.Y - parentHeight / 2 + ((TextBlock)textBlock).DesiredSize.Height / 2);

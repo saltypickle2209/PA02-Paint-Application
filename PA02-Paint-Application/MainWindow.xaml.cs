@@ -91,6 +91,75 @@ namespace PA02_Paint_Application
             }
         }
 
+        private SolidColorBrush _currentTextColor = Brushes.Black;
+
+        public SolidColorBrush CurrentTextColor
+        {
+            get { return _currentTextColor; }
+            set
+            {
+                _currentTextColor = value;
+                Trace.WriteLine("Change text's color to: " + value.ToString());
+                OnPropertyChanged(nameof(CurrentTextColor));
+            }
+        }
+
+        private ObservableCollection<int> _textSizes = new ObservableCollection<int>() { 10, 12, 16, 20, 24, 32 };
+
+        public ObservableCollection<int> TextSizes
+        {
+            get { return _textSizes; }
+        }
+
+        private int _currentTextSize = 10;
+
+        public int CurrentTextSize
+        {
+            get { return _currentTextSize; }
+            set
+            {
+                _currentTextSize = value;
+                Trace.WriteLine("Change text's size to: " + value.ToString());
+                OnPropertyChanged(nameof(CurrentTextSize));
+            }
+        }
+
+        private ObservableCollection<FontFamily> _textFonts = new ObservableCollection<FontFamily>(Fonts.SystemFontFamilies);
+
+        public ObservableCollection<FontFamily> TextFonts
+        {
+            get { return _textFonts; }
+        }
+
+        private FontFamily _currentTextFont = new FontFamily("Arial");
+
+        public FontFamily CurrentTextFont
+        {
+            get { return _currentTextFont; }
+            set 
+            { 
+                _currentTextFont = value;
+                Trace.WriteLine("Change text's font to: " + value.Source);
+                OnPropertyChanged(nameof(CurrentTextFont));
+            }
+        }
+
+
+        private SolidColorBrush _currentTextBackgroundColor = Brushes.Transparent;
+
+        public SolidColorBrush CurrentTextBackgroundColor
+        {
+            get { return _currentTextBackgroundColor; }
+            set
+            {
+                _currentTextBackgroundColor = value;
+                Trace.WriteLine("Change text's background color to: " + value.ToString());
+                OnPropertyChanged(nameof(CurrentTextBackgroundColor));
+            }
+        }
+
+        private StackPanel _textToolBar;
+
         private Point _startingPoint;
         private Point _endingPoint;
         private bool _isPerfectShape = false;
@@ -124,8 +193,9 @@ namespace PA02_Paint_Application
 
             LayerList = new LayerList();
             LayerList.AddLayer(new Layer());
-            LayerList.AddLayer(new Layer());
-            LayerList.AddLayer(new Layer());
+
+            _textToolBar = TextToolBar;
+            _textToolBar.Visibility = Visibility.Hidden;
         }
 
         #region UI_INITIALIZATION
@@ -221,6 +291,10 @@ namespace PA02_Paint_Application
         {
             _currentTool = (string)(sender as RadioButton)!.Tag;
             Trace.WriteLine("Current tool: " + _currentTool);
+            if(_currentTool != "Text" && _textToolBar != null)
+            {
+                _textToolBar.Visibility = Visibility.Hidden;
+            }
         }
 
         private void ShapeRadioButton_Checked(object sender, RoutedEventArgs e)
@@ -252,6 +326,24 @@ namespace PA02_Paint_Application
                     _currentUIElement = _currentGraphicObject.ConvertToUIElement();
                     drawCanvas.Children.Add(_currentUIElement);
                     _isDrawing = true;
+                }
+            }
+            else if (_currentTool == "Text")
+            {
+                if (e.LeftButton == MouseButtonState.Pressed)
+                {
+                    _startingPoint = e.GetPosition(drawCanvas);
+                    _currentGraphicObject = LayerList.GetCurrentLayer()?.FindItem(_startingPoint);
+                    if(_currentGraphicObject != null)
+                    {
+                        ShapeObject shapeObject = (ShapeObject)_currentGraphicObject;
+                        double centerX = (shapeObject.StartingPoint.X + shapeObject.EndingPoint.X) / 2;
+                        double centerY = (shapeObject.StartingPoint.Y + shapeObject.EndingPoint.Y) / 2;
+
+                        _textToolBar.SetValue(Canvas.LeftProperty, centerX- _textToolBar.ActualWidth / 2);
+                        _textToolBar.SetValue(Canvas.TopProperty, centerY - _textToolBar.ActualHeight);
+                        _textToolBar.Visibility = Visibility.Visible;
+                    }
                 }
             }
         }
@@ -305,6 +397,23 @@ namespace PA02_Paint_Application
                     _isPerfectShape = false;
                     ((ShapeObject)_currentGraphicObject!).IsPerfectShape = _isPerfectShape;
                     _currentGraphicObject.UpdateUIElement(_currentUIElement!);
+                }
+            }
+        }
+
+        private void TextToolBarTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                string currentText = TextToolBarTextBox.Text;
+                if(currentText != String.Empty)
+                {
+                    TextToolBarTextBox.Text = String.Empty;
+                    _textToolBar.Visibility = Visibility.Hidden;
+
+                    GraphicObject textObject = new TextObject((ShapeObject)_currentGraphicObject!, currentText, CurrentTextColor, CurrentTextSize, CurrentTextFont, CurrentTextBackgroundColor);
+                    drawCanvas.Children.Add(textObject.ConvertToUIElement());
+                    LayerList.GetCurrentLayer()?.AddItem(textObject);
                 }
             }
         }

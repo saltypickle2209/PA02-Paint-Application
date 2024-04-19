@@ -63,12 +63,12 @@ namespace LayerManager
 		/// <param name="layer">The layer to be added</param>
 		public void AddLayer(Layer layer)
 		{
-			layer.Name = $"Layer {_currentLayerIndex + 1}";
 			_layers.Add(layer);
 
 			// After adding a new layer, immediately move to this layer
 			_currentLayerIndex = _layers.Count - 1;
-		}
+            layer.Name = $"Layer {_currentLayerIndex + 1}";
+        }
 
 		/// <summary>
 		/// Add a new layer at a specific index
