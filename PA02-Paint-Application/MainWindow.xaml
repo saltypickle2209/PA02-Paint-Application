@@ -19,12 +19,15 @@
         <CommandBinding Command="local:MainWindow.CopyCommand" Executed="CopyEvent"/>
         <CommandBinding Command="local:MainWindow.CutCommand" Executed="CutEvent"/>
         <CommandBinding Command="local:MainWindow.PasteCommand" Executed="PasteEvent"/>
+        <CommandBinding Command="local:MainWindow.SaveCommand" Executed="SaveEvent"/>
+        <CommandBinding Command="local:MainWindow.LoadCommand" Executed="LoadEvent"/>
     </Window.CommandBindings>
 
     <Window.InputBindings>
         <KeyBinding Key="C" Modifiers="Ctrl" Command="local:MainWindow.CopyCommand"/>
         <KeyBinding Key="X" Modifiers="Ctrl" Command="local:MainWindow.CutCommand"/>
         <KeyBinding Key="V" Modifiers="Ctrl" Command="local:MainWindow.PasteCommand"/>
+        <KeyBinding Key="O" Modifiers="Ctrl" Command="local:MainWindow.LoadCommand"/>
     </Window.InputBindings>
     
     <Grid>
@@ -35,7 +38,12 @@
         </Grid.RowDefinitions>
 
         <Menu>
-            <MenuItem Header="_File"/>
+            <MenuItem Header="_File">
+                <MenuItem Header="_Save As" InputGestureText="Ctrl+S" Command="local:MainWindow.SaveCommand"/>
+                <MenuItem Header="_Load" InputGestureText="Ctrl+O" Command="local:MainWindow.LoadCommand"/>
+                <Separator/>
+                <MenuItem Header="_Exit" InputGestureText="Alt+F4"/>
+            </MenuItem>
         </Menu>
 
         <ToolBarTray Grid.Row="1">

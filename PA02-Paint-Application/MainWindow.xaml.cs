@@ -1,9 +1,13 @@
 ﻿using Factories;
 using Graphics;
 using LayerManager;
+using Microsoft.Win32;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -594,6 +598,76 @@ namespace PA02_Paint_Application
         {
             LayerList.RemoveLayer(LayerList.CurrentLayerIndex);
             RedrawAll();
+        }
+
+        public static RoutedCommand SaveCommand = new RoutedCommand();
+
+        private void SaveEvent(object sender, RoutedEventArgs e)
+        {
+            if (LayerList.CurrentLayerIndex == -1)
+            {
+                MessageBox.Show("There is nothing to be saved!", "Nothing to save", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            else
+            {
+                var dialog = new SaveFileDialog()
+                {
+                    FileName = "Document",
+                    DefaultExt = ".bson",
+                    Filter = "BSON files (.bson)|*.bson"
+                };
+
+                bool? result = dialog.ShowDialog();
+
+                if (result == true)
+                {
+                    string filePath = dialog.FileName;
+
+                    MemoryStream ms = new MemoryStream(); 
+                    using (BsonDataWriter writer = new BsonDataWriter(ms))
+                    {
+                        JsonSerializer serializer = new JsonSerializer();
+                        serializer.TypeNameHandling = TypeNameHandling.Auto;
+                        serializer.Serialize(writer, LayerList);
+                    }
+
+                    File.WriteAllBytes(filePath, ms.ToArray());
+
+                    Trace.WriteLine("Saved");
+                }
+            }
+        }
+
+        public static RoutedCommand LoadCommand = new RoutedCommand();
+
+        private void LoadEvent(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog()
+            {
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                Filter = "BSON files (.bson)|*.bson"
+            };
+
+            bool? result = dialog.ShowDialog();
+
+            if (result == true)
+            {
+                string filePath = dialog.FileName;
+
+                byte[] data = File.ReadAllBytes(filePath);
+
+                MemoryStream ms = new MemoryStream(data);
+                using (BsonDataReader reader = new BsonDataReader(ms))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.TypeNameHandling = TypeNameHandling.Auto;
+                    LayerList newLayerList = serializer.Deserialize<LayerList>(reader);
+                    LayerList = newLayerList;
+                    RedrawAll();
+                    Trace.WriteLine("Loaded");
+                }
+            }
         }
     }
 }

@@ -25,11 +25,52 @@ namespace Graphics
         }
 
         protected SolidColorBrush _strokeColor;
+
+        public SolidColorBrush StrokeColor
+        {
+            get { return _strokeColor; }
+            set { _strokeColor = value; }
+        }
+
         protected int _strokeThickness;
+
+        public int StrokeThickness
+        {
+            get { return _strokeThickness; }
+            set { _strokeThickness = value; }
+        }
+
         protected IStrokeType _strokeType;
+
+        public IStrokeType StrokeType
+        {
+            get { return _strokeType; }
+            set { _strokeType = value; }
+        }
+
         protected double _rotateAngle;
+
+        public double RotateAngle
+        {
+            get { return _rotateAngle; }
+            set { _rotateAngle = value; }
+        }
+
         protected bool _isHorizontallyFlipped;
+
+        public bool IsHorizontallyFlipped
+        {
+            get { return _isHorizontallyFlipped; }
+            set { _isHorizontallyFlipped = value; }
+        }
+
         protected bool _isVerticallyFlipped;
+        public bool IsVerticallyFlipped
+        {
+            get { return _isVerticallyFlipped; }
+            set { _isVerticallyFlipped = value; }
+        }
+
         protected bool _isPerfectShape;
 
         public bool IsPerfectShape

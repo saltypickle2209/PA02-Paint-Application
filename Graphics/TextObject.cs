@@ -22,10 +22,44 @@ namespace Graphics
         }
 
         private string _text;
+
+        public string Text
+        {
+            get { return _text; }
+            set { _text = value; }
+        }
+
         private SolidColorBrush _textColor;
+
+        public SolidColorBrush TextColor
+        {
+            get { return _textColor; }
+            set { _textColor = value; }
+        }
+
         private int _textSize;
+
+        public int TextSize
+        {
+            get { return _textSize; }
+            set { _textSize = value; }
+        }
+
         private FontFamily _textFont;
+
+        public FontFamily TextFont
+        {
+            get { return _textFont; }
+            set { _textFont = value; }
+        }
+
         private SolidColorBrush _backgroundColor;
+
+        public SolidColorBrush BackgroundColor
+        {
+            get { return _backgroundColor; }
+            set { _backgroundColor = value; }
+        }
 
         public TextObject(ShapeObject parent, string text, SolidColorBrush textColor, int textSize, FontFamily textFont, SolidColorBrush backgroundColor) : base() 
         {
