@@ -1,5 +1,6 @@
 ﻿using Graphics;
 using LayerManager;
+using System.Windows;
 
 namespace Memento
 {
@@ -22,7 +23,7 @@ namespace Memento
         public void BackupAddAction(List<GraphicObject> addedGraphicObjects, int layerIdx)
         {
             _mementos = _mementos.Take(_currentMementoIdx + 1).ToList();
-            _mementos.Add(_originator.SaveAddAction(addedGraphicObjects, layerIdx)); 
+            _mementos.Add(_originator.SaveAddAction(addedGraphicObjects, layerIdx));
             _currentMementoIdx = _mementos.Count - 1;
         }
 
@@ -30,6 +31,18 @@ namespace Memento
         {
             _mementos = _mementos.Take(_currentMementoIdx + 1).ToList();
             _mementos.Add(_originator.SaveDeleteAction(deletedGraphicObjects, layerIdx));
+            _currentMementoIdx = _mementos.Count - 1;
+        }
+        public void BackupMoveAction(List<GraphicObject> deletedGraphicObjects, int layerIdx, Point afterStartPoint, Point beforeEndPoint, Point afterEndPoint, Point beforeStartPoint)
+        {
+            _mementos = _mementos.Take(_currentMementoIdx + 1).ToList();
+            _mementos.Add(_originator.SaveMoveAction(deletedGraphicObjects, layerIdx, afterStartPoint, beforeEndPoint, afterEndPoint, beforeStartPoint));
+            _currentMementoIdx = _mementos.Count - 1;
+        }
+        public void BackupRotateAction(List<GraphicObject> deletedGraphicObjects, int layerIdx, string type)
+        {
+            _mementos = _mementos.Take(_currentMementoIdx + 1).ToList();
+            _mementos.Add(_originator.SaveRotateAction(deletedGraphicObjects, layerIdx, type));
             _currentMementoIdx = _mementos.Count - 1;
         }
 
@@ -49,7 +62,7 @@ namespace Memento
 
         public void Undo()
         {
-            if(_currentMementoIdx >= 0)
+            if (_currentMementoIdx >= 0)
             {
                 IMemento memento = _mementos[_currentMementoIdx];
                 _currentMementoIdx--;
@@ -67,10 +80,9 @@ namespace Memento
 
         public void Redo()
         {
-            if(_currentMementoIdx < _mementos.Count - 1)
+            if (_currentMementoIdx < _mementos.Count - 1)
             {
-                IMemento memento = _mementos[_currentMementoIdx];
-                _currentMementoIdx++;
+                IMemento memento = _mementos[++_currentMementoIdx];
 
                 try
                 {

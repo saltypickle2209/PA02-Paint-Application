@@ -1,5 +1,6 @@
 ﻿using Graphics;
 using LayerManager;
+using System.Windows;
 
 namespace Memento
 {
@@ -41,6 +42,16 @@ namespace Memento
         {
             return new DeleteLayerActionMemento(deletedLayer, deletedIdx);
         }
+        public IMemento SaveMoveAction(List<GraphicObject> movedGraphicObjects, int layerIdx, Point afterStartPoint, Point beforeEndPoint, Point afterEndPoint, Point beforeStartPoint)
+
+        {
+            return new MoveActionMemento(movedGraphicObjects, layerIdx, afterStartPoint, afterEndPoint, beforeEndPoint, beforeStartPoint);
+        }
+        public IMemento SaveRotateAction(List<GraphicObject> movedGraphicObjects, int layerIdx, string TypeRotate)
+
+        {
+            return new RotateActionMemento(movedGraphicObjects, layerIdx, TypeRotate);
+        }
 
         /// <summary>
         /// Restore the state based on the given IMemento object
@@ -48,7 +59,7 @@ namespace Memento
         /// <param name="memento">The memento used to restore the state</param>
         public void Restore(IMemento memento)
         {
-            switch(memento.GetName())
+            switch (memento.GetName())
             {
                 case "Add":
                     {
@@ -75,6 +86,39 @@ namespace Memento
                     {
                         (Layer DeletedLayer, int DeletedIdx) state = ((Layer DeletedLayer, int DeletedIdx))memento.GetState();
                         _layerList.AddLayerAtIndex(state.DeletedLayer, state.DeletedIdx);
+                    }
+                    break;
+                case "MoveAction":
+                    {
+                        (List<GraphicObject> MovedGraphicObjects, int LayerIdx, Point startBefore, Point endBefore) state = ((List<GraphicObject> MovedGraphicObjects, int LayerIdx, Point startBefore, Point endBefore))((MoveActionMemento)memento).GetStateBefore();
+                        _layerList.GetLayerAtIndex(state.LayerIdx)?.UpdateItem(state.MovedGraphicObjects, state.startBefore, state.endBefore);
+                    }
+                    break;
+                case "RotateAction":
+                    {
+                        (List<GraphicObject> MovedGraphicObjects, int LayerIdx, string type) state = ((List<GraphicObject> MovedGraphicObjects, int LayerIdx, string type))((RotateActionMemento)memento).GetState();
+                        if (state.type == "LeftRotate")
+                        {
+                            ShapeObject updateGraphicObject = (ShapeObject)state.MovedGraphicObjects[0];
+                            updateGraphicObject.RotateAngle += 90;
+                        }
+                        else if (state.type == "RightRotate")
+                        {
+                            ShapeObject updateGraphicObject = (ShapeObject)state.MovedGraphicObjects[0];
+                            updateGraphicObject.RotateAngle -= 90;
+                        }
+                        else if (state.type == "Horizontal")
+                        {
+                            ShapeObject updateGraphicObject = (ShapeObject)state.MovedGraphicObjects[0];
+                            bool currentState = updateGraphicObject.IsHorizontallyFlipped;
+                            updateGraphicObject.IsHorizontallyFlipped = !currentState;
+                        }
+                        else if (state.type == "Vertical")
+                        {
+                            ShapeObject updateGraphicObject = (ShapeObject)state.MovedGraphicObjects[0];
+                            bool currentState = updateGraphicObject.IsVerticallyFlipped;
+                            updateGraphicObject.IsVerticallyFlipped = !currentState;
+                        }
                     }
                     break;
 
@@ -118,7 +162,39 @@ namespace Memento
                         _layerList.RemoveLayer(state.DeletedIdx);
                     }
                     break;
-
+                case "MoveAction":
+                    {
+                        (List<GraphicObject> MovedGraphicObjects, int LayerIdx, Point startAfter, Point endAfter) state = ((List<GraphicObject> MovedGraphicObjects, int LayerIdx, Point startAfter, Point endAfter))((MoveActionMemento)memento).GetStateAfter();
+                        _layerList.GetLayerAtIndex(state.LayerIdx)?.UpdateItem(state.MovedGraphicObjects, state.startAfter, state.endAfter);
+                    }
+                    break;
+                case "RotateAction":
+                    {
+                        (List<GraphicObject> MovedGraphicObjects, int LayerIdx, string type) state = ((List<GraphicObject> MovedGraphicObjects, int LayerIdx, string type))((RotateActionMemento)memento).GetState();
+                        if (state.type == "LeftRotate")
+                        {
+                            ShapeObject updateGraphicObject = (ShapeObject)state.MovedGraphicObjects[0];
+                            updateGraphicObject.RotateAngle -= 90;
+                        }
+                        else if (state.type == "RightRotate")
+                        {
+                            ShapeObject updateGraphicObject = (ShapeObject)state.MovedGraphicObjects[0];
+                            updateGraphicObject.RotateAngle += 90;
+                        }
+                        else if (state.type == "Horizontal")
+                        {
+                            ShapeObject updateGraphicObject = (ShapeObject)state.MovedGraphicObjects[0];
+                            bool currentState = updateGraphicObject.IsHorizontallyFlipped;
+                            updateGraphicObject.IsHorizontallyFlipped = !currentState;
+                        }
+                        else if (state.type == "Vertical")
+                        {
+                            ShapeObject updateGraphicObject = (ShapeObject)state.MovedGraphicObjects[0];
+                            bool currentState = updateGraphicObject.IsVerticallyFlipped;
+                            updateGraphicObject.IsVerticallyFlipped = !currentState;
+                        }
+                    }
+                    break;
                 default:
                     throw new Exception("Unknown memento: " + memento.GetName());
             }

@@ -29,7 +29,7 @@
         <KeyBinding Key="V" Modifiers="Ctrl" Command="local:MainWindow.PasteCommand"/>
         <KeyBinding Key="O" Modifiers="Ctrl" Command="local:MainWindow.LoadCommand"/>
     </Window.InputBindings>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -49,12 +49,12 @@
         <ToolBarTray Grid.Row="1">
             <!-- UNDO/REDO -->
             <ToolBar>
-                <Button x:Name="UndoBtn" MinWidth="32" MinHeight="32" ToolTip="Undo the previous action">
+                <Button x:Name="UndoBtn" MinWidth="32" MinHeight="32" Click="UndoBtn_Click" ToolTip="Undo the previous action">
                     <Image Source="Icons\undo.ico"  Width="24">
                         <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
                     </Image>
                 </Button>
-                <Button x:Name="RedoBtn" MinWidth="32" MinHeight="32" ToolTip="Redo the previous action">
+                <Button x:Name="RedoBtn" MinWidth="32" MinHeight="32" Click="RedoBtn_Click" ToolTip="Redo the previous action">
                     <Image Source="Icons\undo.ico"  Width="24">
                         <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
                         <Image.RenderTransform>
@@ -63,7 +63,7 @@
                     </Image>
                 </Button>
             </ToolBar>
-            
+
             <!-- TOOL SELECTION -->
             <ToolBar>
                 <RadioButton Tag="Pen" MinWidth="32" MinHeight="32" ToolTip="Change to pen tool" IsChecked="True" Checked="ToolRadioButton_Checked">
@@ -87,10 +87,31 @@
                     </Image>
                 </RadioButton>
             </ToolBar>
-
+            <ToolBar>
+                <Button Tag="LeftRotate" MinWidth="32" MinHeight="32" ToolTip="Rotate Left 90"  Click="LeftRotate_Checked">
+                    <Image Source="Icons\pen.ico" Width="24">
+                        <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
+                    </Image>
+                </Button>
+                <Button Tag="rightRotate" MinWidth="32" MinHeight="32" ToolTip="Rotate Right 90" Click="rightRotate_Checked">
+                    <Image Source="Icons\text.ico" Width="24">
+                        <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
+                    </Image>
+                </Button>
+                <Button Tag="Horizontal" MinWidth="32" MinHeight="32" ToolTip="Flip Horizontal" Click="Horizontal_Checked">
+                    <Image Source="Icons\selection.ico" Width="24">
+                        <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
+                    </Image>
+                </Button>
+                <Button Tag="Vertical" MinWidth="32" MinHeight="32" ToolTip="Flip Vertical" Click="Vertical_Checked">
+                    <Image Source="Icons\selection-box.ico" Width="24">
+                        <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
+                    </Image>
+                </Button>
+            </ToolBar>
             <!-- SHAPE SELECTOR -->
             <ToolBar x:Name="ShapeToolBar"/>
-            
+
             <!-- BRUSH SELECTOR -->
             <ToolBar>
                 <StackPanel Orientation="Vertical" Margin="4,0,0,0">
@@ -258,7 +279,7 @@
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Text="Layers" Margin="4,0,0,0" VerticalAlignment="Center"/>
-                        
+
                         <Button x:Name="AddLayeBtn" Grid.Column="1" MinWidth="24" MinHeight="24" ToolTip="Add a new layer" 
                                 Background="Transparent" BorderBrush="{x:Null}" Click="AddLayeBtn_Click">
                             <Image Source="Icons\plus.ico" Width="16">

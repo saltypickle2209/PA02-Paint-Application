@@ -7,7 +7,7 @@ namespace Graphics
 {
     public class RectangleObject : ShapeObject
     {
-        public RectangleObject(Point startingPoint, Point endingPoint, SolidColorBrush strokeColor, int strokeThickness, IStrokeType strokeType, double rotateAngle, bool isHorizontallyFlipped, bool isVerticallyFlipped, bool isPerfectShape) 
+        public RectangleObject(Point startingPoint, Point endingPoint, SolidColorBrush strokeColor, int strokeThickness, IStrokeType strokeType, double rotateAngle, bool isHorizontallyFlipped, bool isVerticallyFlipped, bool isPerfectShape)
             : base(startingPoint, endingPoint, strokeColor, strokeThickness, strokeType, rotateAngle, isHorizontallyFlipped, isVerticallyFlipped, isPerfectShape)
         {
         }
@@ -63,7 +63,7 @@ namespace Graphics
 
         public override void UpdateUIElement(UIElement element)
         {
-            if(element is Rectangle rectangle)
+            if (element is Rectangle rectangle)
             {
                 if ((string)rectangle.Tag != _id)
                     return;
@@ -84,12 +84,12 @@ namespace Graphics
                 double centerY = (_startingPoint.Y + _endingPoint.Y) / 2;
 
                 TransformGroup transformGroup = new TransformGroup();
-                transformGroup.Children.Add(new RotateTransform(_rotateAngle, centerX, centerY));
+                transformGroup.Children.Add(new RotateTransform(_rotateAngle, width / 2, height / 2));
                 transformGroup.Children.Add(new ScaleTransform(
                     _isHorizontallyFlipped ? -1 : 1,
                     _isVerticallyFlipped ? -1 : 1,
-                    centerX,
-                    centerY
+                    width / 2,
+                    height / 2
                 ));
 
                 rectangle.RenderTransform = transformGroup;

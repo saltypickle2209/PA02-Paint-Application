@@ -1,6 +1,7 @@
 ﻿using Factories;
 using Graphics;
 using LayerManager;
+using Memento;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
@@ -168,14 +169,19 @@ namespace PA02_Paint_Application
 
         private Point _startingPoint;
         private Point _endingPoint;
+        private Point PreviousStartPoint;
+        private Point PreviousEndPoint;
+        private Point NextStartPoint;
+        private Point NextEndPoint;
         private bool _isPerfectShape = false;
         private UIElement? _currentUIElement;
         private GraphicObject? _currentGraphicObject;
+        private GraphicObject? selectedGraphicObject;
         private bool _isDrawing = false;
+        private bool _isMoving = false;
 
         private List<GraphicObject> _clipboard = new List<GraphicObject>();
         private List<GraphicObject>? _tempMem = null;
-
         #endregion PROPERTY_DECLARATION
 
         public MainWindow()
@@ -195,7 +201,37 @@ namespace PA02_Paint_Application
                 OnPropertyChanged(nameof(LayerList));
             }
         }
+        private LayerList _layerListTest;
 
+        public LayerList LayerListTest
+        {
+            get { return _layerListTest; }
+            set
+            {
+                _layerListTest = value;
+                OnPropertyChanged(nameof(LayerListTest));
+            }
+        }
+        private Originator _originator;
+        public Originator Originator
+        {
+            get { return _originator; }
+            set
+            {
+                _originator = value;
+                OnPropertyChanged(nameof(Originator));
+            }
+        }
+        private Caretaker _caretaker;
+        public Caretaker CareTaker
+        {
+            get { return _caretaker; }
+            set
+            {
+                _caretaker = value;
+                OnPropertyChanged(nameof(CareTaker));
+            }
+        }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             InitializeToolBar();
@@ -205,6 +241,11 @@ namespace PA02_Paint_Application
 
             _textToolBar = TextToolBar;
             _textToolBar.Visibility = Visibility.Hidden;
+            LayerListTest = new LayerList();
+            LayerListTest.AddLayer(new Layer());
+
+            Originator = new Originator(LayerList);
+            CareTaker = new Caretaker(Originator);
         }
 
         #region UI_INITIALIZATION
@@ -371,6 +412,62 @@ namespace PA02_Paint_Application
                     }
                 }
             }
+            else if (_currentTool == "SingleSelection")
+            {
+                if (e.LeftButton == MouseButtonState.Pressed)
+                {
+                    if (_currentGraphicObject != null)
+                    {
+                        drawCanvas.Children.Remove(_currentUIElement);
+                        _currentGraphicObject = null;
+                        _currentUIElement = null;
+                        _tempMem = null;
+                    }
+                    _isDrawing = false;
+                    _startingPoint = e.GetPosition(drawCanvas);
+                    _currentGraphicObject = LayerList.GetCurrentLayer()?.FindItem(_startingPoint);
+                    //selectedGraphicObject = _currentGraphicObject;
+
+                    if (selectedGraphicObject != null && selectedGraphicObject == _currentGraphicObject)
+                    {
+                        //_currentGraphicObject = null;
+                        //drawCanvas.Children.Remove(_currentUIElement);
+                        _isDrawing = true;
+
+                        foreach (UIElement element in drawCanvas.Children)
+                        {
+                            // Thực hiện các thao tác trên mỗi phần tử (element) ở đây
+                            // Ví dụ: Xoá phần tử khỏi canvas
+                            if (element is Shape shapElement)
+                            {
+
+                                if (shapElement.Tag == selectedGraphicObject.Id)
+                                {
+                                    _currentUIElement = element;
+
+                                }
+                            }
+                        }
+                        PreviousStartPoint = new Point(((ShapeObject)selectedGraphicObject).StartingPoint.X, ((ShapeObject)selectedGraphicObject).StartingPoint.Y);
+                        PreviousEndPoint = new Point(((ShapeObject)selectedGraphicObject).EndingPoint.X, ((ShapeObject)selectedGraphicObject).EndingPoint.Y);
+                    }
+                    else if (_currentGraphicObject != null)
+                    {
+                        selectedGraphicObject = _currentGraphicObject;
+
+                        (Point TopPoint, Point BottomPoint) bounds = ((Point, Point))LayerList.GetABound(_currentGraphicObject);
+                        _currentGraphicObject = new RectangleObject(bounds.TopPoint, bounds.BottomPoint, Brushes.Blue, 1, new DashStroke(), 0, false, false, false);
+                        _currentUIElement = _currentGraphicObject.ConvertToUIElement();
+                        _currentUIElement.Opacity = 0.3f;
+                        ((Rectangle)_currentUIElement).Fill = Brushes.LightBlue;
+                        drawCanvas.Children.Add(_currentUIElement);
+                    }
+                    else
+                    {
+                        selectedGraphicObject = null;
+                    }
+                }
+            }
             else if (_currentTool == "MultipleSelection")
             {
                 if (e.LeftButton == MouseButtonState.Pressed)
@@ -407,6 +504,29 @@ namespace PA02_Paint_Application
                     _currentGraphicObject.UpdateUIElement(_currentUIElement!);
                 }
             }
+            else if (_currentTool == "SingleSelection" && _isDrawing)
+            {
+                if (e.LeftButton == MouseButtonState.Pressed && selectedGraphicObject != null)
+                {
+                    double offsetX = e.GetPosition(drawCanvas).X - _startingPoint.X;
+                    double offsetY = e.GetPosition(drawCanvas).Y - _startingPoint.Y;
+                    _startingPoint = e.GetPosition(drawCanvas);
+                    Point StartUpdate = ((ShapeObject)selectedGraphicObject).StartingPoint;
+                    Console.WriteLine($"StartingPoint: {StartUpdate}");
+                    StartUpdate.X += offsetX;
+                    StartUpdate.Y += offsetY;
+                    Point EndUpdate = ((ShapeObject)selectedGraphicObject).EndingPoint;
+                    Console.WriteLine($"EndPoint: {EndUpdate}");
+                    _isMoving = true;
+                    EndUpdate.X += offsetX;
+                    EndUpdate.Y += offsetY;
+                    ((ShapeObject)selectedGraphicObject).StartingPoint = StartUpdate;
+                    ((ShapeObject)selectedGraphicObject).EndingPoint = EndUpdate;
+
+
+                    selectedGraphicObject.UpdateUIElement(_currentUIElement!);
+                }
+            }
         }
 
         private async void drawCanvas_MouseUp(object sender, MouseButtonEventArgs e)
@@ -416,6 +536,9 @@ namespace PA02_Paint_Application
                 if (e.LeftButton == MouseButtonState.Released)
                 {
                     LayerList.GetCurrentLayer()!.AddItem(_currentGraphicObject!);
+                    List<GraphicObject> listTemp = new List<GraphicObject>();
+                    listTemp.Add(_currentGraphicObject!);
+                    CareTaker.BackupAddAction(listTemp, LayerList.CurrentLayerIndex);
                     _currentGraphicObject = null;
                     _currentUIElement = null;
                     _isDrawing = false;
@@ -444,6 +567,20 @@ namespace PA02_Paint_Application
                         drawCanvas.Children.Add(_currentUIElement);
                     }
                 }
+            }
+            else if (_currentTool == "SingleSelection" && _isDrawing && _isMoving)
+            {
+                List<GraphicObject> MoveItem = new List<GraphicObject>();
+                MoveItem.Add(selectedGraphicObject!);
+                NextStartPoint = new Point(((ShapeObject)selectedGraphicObject).StartingPoint.X, ((ShapeObject)selectedGraphicObject).StartingPoint.Y);
+                NextEndPoint = new Point(((ShapeObject)selectedGraphicObject).EndingPoint.X, ((ShapeObject)selectedGraphicObject).EndingPoint.Y);
+                CareTaker.BackupMoveAction(MoveItem, LayerList.CurrentLayerIndex, NextStartPoint, NextEndPoint, PreviousEndPoint, PreviousStartPoint);
+                _currentGraphicObject = null;
+                _currentUIElement = null;
+                _isDrawing = false;
+                _isMoving = false;
+                selectedGraphicObject = null;
+
             }
         }
 
@@ -525,6 +662,9 @@ namespace PA02_Paint_Application
                     GraphicObject textObject = new TextObject((ShapeObject)_currentGraphicObject!, currentText, CurrentTextColor, CurrentTextSize, CurrentTextFont, CurrentTextBackgroundColor);
                     drawCanvas.Children.Add(textObject.ConvertToUIElement());
                     LayerList.GetCurrentLayer()?.AddItem(textObject);
+                    List<GraphicObject> textTemp = new List<GraphicObject>();
+                    textTemp.Add(textObject);
+                    CareTaker.BackupAddAction(textTemp, LayerList.CurrentLayerIndex);
                 }
             }
         }
@@ -552,15 +692,16 @@ namespace PA02_Paint_Application
                 _clipboard.AddRange(_tempMem);
 
                 LayerList.GetCurrentLayer()?.RemoveItems(_clipboard);
+                CareTaker.BackupDeleteAction(_clipboard, LayerList.CurrentLayerIndex);
                 RedrawAll();
             }
         }
 
         public static RoutedCommand PasteCommand = new RoutedCommand();
 
-        private void PasteEvent(object sender,  RoutedEventArgs e) 
+        private void PasteEvent(object sender, RoutedEventArgs e)
         {
-            if(_clipboard.Count != 0)
+            if (_clipboard.Count != 0)
             {
                 Trace.WriteLine("Paste");
                 List<GraphicObject> shapeObjects = new List<GraphicObject>(_clipboard.Where(graphicObject => graphicObject is ShapeObject));
@@ -574,7 +715,7 @@ namespace PA02_Paint_Application
 
                     foreach (GraphicObject textObject in textObjects)
                     {
-                        if(((TextObject)textObject).Parent == graphicObject)
+                        if (((TextObject)textObject).Parent == graphicObject)
                         {
                             GraphicObject copiedTextObject = ((TextObject)textObject).DeepClone((ShapeObject)copiedGraphicObject);
                             copiedGraphicObjects.Add(copiedTextObject);
@@ -583,6 +724,7 @@ namespace PA02_Paint_Application
                 }
 
                 LayerList.GetCurrentLayer()?.AddItems(copiedGraphicObjects);
+                CareTaker.BackupAddAction(copiedGraphicObjects, LayerList.CurrentLayerIndex);
                 RedrawAll();
                 _clipboard.Clear();
                 _clipboard.AddRange(copiedGraphicObjects);
@@ -591,11 +733,16 @@ namespace PA02_Paint_Application
 
         private void AddLayeBtn_Click(object sender, RoutedEventArgs e)
         {
-            LayerList.AddLayer(new Layer());
+            Layer tempLayer = new Layer();
+
+            LayerList.AddLayer(tempLayer);
+            CareTaker.BackupAddLayerAction(LayerList.GetCurrentLayer()!, LayerList.CurrentLayerIndex);
         }
 
         private void DeleteLayerBtn_Click(object sender, RoutedEventArgs e)
         {
+
+            CareTaker.BackupDeleteLayerAction(LayerList.GetCurrentLayer()!, LayerList.CurrentLayerIndex);
             LayerList.RemoveLayer(LayerList.CurrentLayerIndex);
             RedrawAll();
         }
@@ -624,7 +771,7 @@ namespace PA02_Paint_Application
                 {
                     string filePath = dialog.FileName;
 
-                    MemoryStream ms = new MemoryStream(); 
+                    MemoryStream ms = new MemoryStream();
                     using (BsonDataWriter writer = new BsonDataWriter(ms))
                     {
                         JsonSerializer serializer = new JsonSerializer();
@@ -669,5 +816,120 @@ namespace PA02_Paint_Application
                 }
             }
         }
+        private void LeftRotate_Checked(object sender, RoutedEventArgs e)
+        {
+            if (selectedGraphicObject != null)
+            {
+                ((ShapeObject)selectedGraphicObject).RotateAngle -= 90;
+                foreach (UIElement element in drawCanvas.Children)
+                {
+                    // Thực hiện các thao tác trên mỗi phần tử (element) ở đây
+                    // Ví dụ: Xoá phần tử khỏi canvas
+                    if (element is Shape shapElement)
+                    {
+
+                        if (shapElement.Tag == selectedGraphicObject.Id)
+                        {
+                            ((ShapeObject)selectedGraphicObject).UpdateUIElement(element);
+                        }
+                    }
+                }
+                List<GraphicObject> graphicObjects = new List<GraphicObject>();
+                graphicObjects.Add(selectedGraphicObject);
+                CareTaker.BackupRotateAction(graphicObjects, LayerList.CurrentLayerIndex, "LeftRotate");
+            }
+        }
+
+        // Hàm xử lý khi RadioButton "rightRotate" được chọn
+        private void rightRotate_Checked(object sender, RoutedEventArgs e)
+        {
+            if (selectedGraphicObject != null)
+            {
+                ((ShapeObject)selectedGraphicObject).RotateAngle += 90;
+                foreach (UIElement element in drawCanvas.Children)
+                {
+                    // Thực hiện các thao tác trên mỗi phần tử (element) ở đây
+                    // Ví dụ: Xoá phần tử khỏi canvas
+                    if (element is Shape shapElement)
+                    {
+
+                        if (shapElement.Tag == selectedGraphicObject.Id)
+                        {
+                            ((ShapeObject)selectedGraphicObject).UpdateUIElement(element);
+                        }
+                    }
+                }
+                List<GraphicObject> graphicObjects = new List<GraphicObject>();
+                graphicObjects.Add(selectedGraphicObject);
+                CareTaker.BackupRotateAction(graphicObjects, LayerList.CurrentLayerIndex, "RightRotate");
+            }
+
+        }
+
+        // Hàm xử lý khi RadioButton "Horizontal" được chọn
+        private void Horizontal_Checked(object sender, RoutedEventArgs e)
+        {
+            if (selectedGraphicObject != null)
+            {
+                bool currentHorizontal = ((ShapeObject)selectedGraphicObject).IsHorizontallyFlipped;
+                ((ShapeObject)selectedGraphicObject).IsHorizontallyFlipped = !currentHorizontal;
+                foreach (UIElement element in drawCanvas.Children)
+                {
+                    // Thực hiện các thao tác trên mỗi phần tử (element) ở đây
+                    // Ví dụ: Xoá phần tử khỏi canvas
+                    if (element is Shape shapElement)
+                    {
+
+                        if (shapElement.Tag == selectedGraphicObject.Id)
+                        {
+                            ((ShapeObject)selectedGraphicObject).UpdateUIElement(element);
+                        }
+                    }
+                }
+                List<GraphicObject> graphicObjects = new List<GraphicObject>();
+                graphicObjects.Add(selectedGraphicObject);
+                CareTaker.BackupRotateAction(graphicObjects, LayerList.CurrentLayerIndex, "Horizontal");
+            }
+        }
+
+        // Hàm xử lý khi RadioButton "Vertical" được chọn
+        private void Vertical_Checked(object sender, RoutedEventArgs e)
+        {
+            if (selectedGraphicObject != null)
+            {
+                bool currentVertical = ((ShapeObject)selectedGraphicObject).IsVerticallyFlipped;
+                ((ShapeObject)selectedGraphicObject).IsVerticallyFlipped = !currentVertical;
+                foreach (UIElement element in drawCanvas.Children)
+                {
+                    // Thực hiện các thao tác trên mỗi phần tử (element) ở đây
+                    // Ví dụ: Xoá phần tử khỏi canvas
+                    if (element is Shape shapElement)
+                    {
+
+                        if (shapElement.Tag == selectedGraphicObject.Id)
+                        {
+                            ((ShapeObject)selectedGraphicObject).UpdateUIElement(element);
+                        }
+                    }
+                }
+                List<GraphicObject> graphicObjects = new List<GraphicObject>();
+                graphicObjects.Add(selectedGraphicObject);
+                CareTaker.BackupRotateAction(graphicObjects, LayerList.CurrentLayerIndex, "Vertical");
+            }
+        }
+        private void UndoBtn_Click(object sender, RoutedEventArgs e)
+        {
+            // Xử lý logic khi nút "Undo" được nhấn
+            CareTaker.Undo();
+            RedrawAll();
+        }
+
+        private void RedoBtn_Click(object sender, RoutedEventArgs e)
+        {
+            // Xử lý logic khi nút "Redo" được nhấn
+            CareTaker.Redo();
+            RedrawAll();
+        }
+
     }
 }
