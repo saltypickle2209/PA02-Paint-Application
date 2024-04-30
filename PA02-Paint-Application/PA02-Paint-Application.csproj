@@ -11,12 +11,21 @@
 
   <ItemGroup>
     <None Remove="Icons\delete.ico" />
+    <None Remove="Icons\horizontal-flip.ico" />
     <None Remove="Icons\pen.ico" />
     <None Remove="Icons\plus.ico" />
+    <None Remove="Icons\rotate-left.ico" />
     <None Remove="Icons\selection-box.ico" />
     <None Remove="Icons\selection.ico" />
     <None Remove="Icons\text.ico" />
     <None Remove="Icons\undo.ico" />
+    <None Remove="Icons\vertical-flip.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Icons\horizontal-flip.ico" />
+    <Resource Include="Icons\rotate-left.ico" />
+    <Resource Include="Icons\vertical-flip.ico" />
   </ItemGroup>
 
   <ItemGroup>

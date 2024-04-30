@@ -89,22 +89,25 @@
             </ToolBar>
             <ToolBar>
                 <Button Tag="LeftRotate" MinWidth="32" MinHeight="32" ToolTip="Rotate Left 90"  Click="LeftRotate_Checked">
-                    <Image Source="Icons\pen.ico" Width="24">
+                    <Image Source="Icons\rotate-left.ico" Width="24">
                         <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
                     </Image>
                 </Button>
                 <Button Tag="rightRotate" MinWidth="32" MinHeight="32" ToolTip="Rotate Right 90" Click="rightRotate_Checked">
-                    <Image Source="Icons\text.ico" Width="24">
+                    <Image Source="Icons\rotate-left.ico" Width="24">
                         <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
+                        <Image.RenderTransform>
+                            <ScaleTransform ScaleX="-1" CenterX="12" />
+                        </Image.RenderTransform>
                     </Image>
                 </Button>
                 <Button Tag="Horizontal" MinWidth="32" MinHeight="32" ToolTip="Flip Horizontal" Click="Horizontal_Checked">
-                    <Image Source="Icons\selection.ico" Width="24">
+                    <Image Source="Icons\horizontal-flip.ico" Width="24">
                         <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
                     </Image>
                 </Button>
                 <Button Tag="Vertical" MinWidth="32" MinHeight="32" ToolTip="Flip Vertical" Click="Vertical_Checked">
-                    <Image Source="Icons\selection-box.ico" Width="24">
+                    <Image Source="Icons\vertical-flip.ico" Width="24">
                         <RenderOptions.BitmapScalingMode>HighQuality</RenderOptions.BitmapScalingMode>
                     </Image>
                 </Button>
@@ -301,14 +304,7 @@
                                 <DataTemplate>
                                     <RadioButton Content="{Binding Name}" Height="50" GroupName="LayerRadioButtons" Checked="LayerRadioButton_Checked">
                                         <RadioButton.Tag>
-                                            <MultiBinding Converter="{StaticResource LayerToTagConverter}" Mode="OneWay">
-                                                <Binding Path="."/>
-                                                <Binding Path="DataContext.LayerList">
-                                                    <Binding.RelativeSource>
-                                                        <RelativeSource Mode="FindAncestor" AncestorType="{x:Type Window}"/>
-                                                    </Binding.RelativeSource>
-                                                </Binding>
-                                            </MultiBinding>
+                                            <Binding Path="."/>
                                         </RadioButton.Tag>
                                         <RadioButton.Style>
                                             <Style BasedOn="{StaticResource {x:Type ToggleButton}}"

@@ -362,7 +362,7 @@ namespace PA02_Paint_Application
 
         private void LayerRadioButton_Checked(object sender, RoutedEventArgs e)
         {
-            LayerList.CurrentLayerIndex = (int)(sender as RadioButton)!.Tag;
+            LayerList.CurrentLayerIndex = LayerList.Layers.IndexOf((Layer)(sender as RadioButton)!.Tag);
             Trace.WriteLine("Current layer: " + LayerList.CurrentLayerIndex.ToString());
             if (_currentTool == "MultipleSelection" && _currentGraphicObject != null)
             {
@@ -501,6 +501,11 @@ namespace PA02_Paint_Application
                 {
                     _endingPoint = e.GetPosition(drawCanvas);
                     ((ShapeObject)_currentGraphicObject!).EndingPoint = _endingPoint;
+                    if(_currentGraphicObject is StarObject || _currentGraphicObject is ArrowObject)
+                    {
+                        ((ShapeObject)_currentGraphicObject!).IsHorizontallyFlipped = _startingPoint.X > _endingPoint.X;
+                        ((ShapeObject)_currentGraphicObject!).IsVerticallyFlipped = _startingPoint.Y > _endingPoint.Y;
+                    }
                     _currentGraphicObject.UpdateUIElement(_currentUIElement!);
                 }
             }
@@ -590,6 +595,9 @@ namespace PA02_Paint_Application
             double y = Math.Min(startingPoint.Y, endingPoint.Y);
             double width = Math.Abs(startingPoint.X - endingPoint.X);
             double height = Math.Abs(startingPoint.Y - endingPoint.Y);
+
+            if ((int)width == 0 && (int)height == 0)
+                return;
 
             RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap(
                 (int)width,
@@ -741,7 +749,6 @@ namespace PA02_Paint_Application
 
         private void DeleteLayerBtn_Click(object sender, RoutedEventArgs e)
         {
-
             CareTaker.BackupDeleteLayerAction(LayerList.GetCurrentLayer()!, LayerList.CurrentLayerIndex);
             LayerList.RemoveLayer(LayerList.CurrentLayerIndex);
             RedrawAll();
