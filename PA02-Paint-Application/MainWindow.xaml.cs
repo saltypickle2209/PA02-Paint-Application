@@ -938,5 +938,10 @@ namespace PA02_Paint_Application
             RedrawAll();
         }
 
+        private void About_Click(object sender, RoutedEventArgs e)
+        {
+            var about = new About();
+            about.ShowDialog();
+        }
     }
 }

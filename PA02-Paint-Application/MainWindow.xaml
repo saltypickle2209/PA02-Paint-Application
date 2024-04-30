@@ -42,6 +42,8 @@
                 <MenuItem Header="_Save As" InputGestureText="Ctrl+S" Command="local:MainWindow.SaveCommand"/>
                 <MenuItem Header="_Load" InputGestureText="Ctrl+O" Command="local:MainWindow.LoadCommand"/>
                 <Separator/>
+                <MenuItem Header="_About" Click="About_Click" />
+                <Separator/>
                 <MenuItem Header="_Exit" InputGestureText="Alt+F4"/>
             </MenuItem>
         </Menu>
