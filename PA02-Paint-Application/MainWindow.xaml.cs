@@ -501,7 +501,7 @@ namespace PA02_Paint_Application
                 {
                     _endingPoint = e.GetPosition(drawCanvas);
                     ((ShapeObject)_currentGraphicObject!).EndingPoint = _endingPoint;
-                    if(_currentGraphicObject is StarObject || _currentGraphicObject is ArrowObject)
+                    if (_currentGraphicObject is StarObject || _currentGraphicObject is ArrowObject)
                     {
                         ((ShapeObject)_currentGraphicObject!).IsHorizontallyFlipped = _startingPoint.X > _endingPoint.X;
                         ((ShapeObject)_currentGraphicObject!).IsVerticallyFlipped = _startingPoint.Y > _endingPoint.Y;
@@ -528,8 +528,34 @@ namespace PA02_Paint_Application
                     ((ShapeObject)selectedGraphicObject).StartingPoint = StartUpdate;
                     ((ShapeObject)selectedGraphicObject).EndingPoint = EndUpdate;
 
-
                     selectedGraphicObject.UpdateUIElement(_currentUIElement!);
+                    foreach (GraphicObject text in LayerList.GetCurrentLayer()!.GraphicObjectList)
+                    {
+                        if (text is TextObject Graphic)
+                        {
+                            if (Graphic.Parent == selectedGraphicObject)
+                            {
+
+                                foreach (UIElement element in drawCanvas.Children)
+                                {
+                                    // Thực hiện các thao tác trên mỗi phần tử (element) ở đây
+                                    // Ví dụ: Xoá phần tử khỏi canvas
+                                    if (element is TextBlock shapElement)
+                                    {
+
+                                        if (shapElement.Tag == Graphic.Id)
+                                        {
+                                            Trace.WriteLine("TextMove");
+
+                                            Graphic.UpdateUIElement(element);
+
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -924,12 +950,15 @@ namespace PA02_Paint_Application
                 CareTaker.BackupRotateAction(graphicObjects, LayerList.CurrentLayerIndex, "Vertical");
             }
         }
+        public static RoutedCommand UndoCommand = new RoutedCommand();
+
         private void UndoBtn_Click(object sender, RoutedEventArgs e)
         {
             // Xử lý logic khi nút "Undo" được nhấn
             CareTaker.Undo();
             RedrawAll();
         }
+        public static RoutedCommand RedoCommand = new RoutedCommand();
 
         private void RedoBtn_Click(object sender, RoutedEventArgs e)
         {

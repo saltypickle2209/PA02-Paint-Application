@@ -61,7 +61,7 @@ namespace Graphics
             set { _backgroundColor = value; }
         }
 
-        public TextObject(ShapeObject parent, string text, SolidColorBrush textColor, int textSize, FontFamily textFont, SolidColorBrush backgroundColor) : base() 
+        public TextObject(ShapeObject parent, string text, SolidColorBrush textColor, int textSize, FontFamily textFont, SolidColorBrush backgroundColor) : base()
         {
             _parent = parent;
             _text = text;
@@ -118,10 +118,10 @@ namespace Graphics
             textBlock.SetValue(Canvas.LeftProperty, _parent.StartingPoint.X < _parent.EndingPoint.X ?
                 _parent.StartingPoint.X + parentWidth / 2 - ((TextBlock)textBlock).DesiredSize.Width / 2 :
                 _parent.StartingPoint.X - parentWidth / 2 - ((TextBlock)textBlock).DesiredSize.Width / 2);
-            textBlock.SetValue(Canvas.TopProperty, _parent.StartingPoint.Y < _parent.EndingPoint.Y ? 
+            textBlock.SetValue(Canvas.TopProperty, _parent.StartingPoint.Y < _parent.EndingPoint.Y ?
                 _parent.StartingPoint.Y + parentHeight / 2 - ((TextBlock)textBlock).DesiredSize.Height / 2 :
                 _parent.StartingPoint.Y - parentHeight / 2 - ((TextBlock)textBlock).DesiredSize.Height / 2);
-            
+
             return textBlock;
         }
 
@@ -141,11 +141,12 @@ namespace Graphics
                 textBlock.Width = parentWidth;
 
                 textBlock.SetValue(Canvas.LeftProperty, _parent.StartingPoint.X < _parent.EndingPoint.X ?
-                    _parent.StartingPoint.X + parentWidth / 2 - textBlock.Width / 2 :
-                    _parent.StartingPoint.X - parentWidth / 2 + textBlock.Width / 2);
+                    _parent.StartingPoint.X + parentWidth / 2 - ((TextBlock)textBlock).DesiredSize.Width / 2 :
+                _parent.StartingPoint.X - parentWidth / 2 - ((TextBlock)textBlock).DesiredSize.Width / 2);
                 textBlock.SetValue(Canvas.TopProperty, _parent.StartingPoint.Y < _parent.EndingPoint.Y ?
-                    _parent.StartingPoint.Y + parentHeight / 2 - textBlock.Height / 2 :
-                    _parent.StartingPoint.Y - parentHeight / 2 + textBlock.Height / 2);
+                      _parent.StartingPoint.Y + parentHeight / 2 - ((TextBlock)textBlock).DesiredSize.Height / 2 :
+                _parent.StartingPoint.Y - parentHeight / 2 - ((TextBlock)textBlock).DesiredSize.Height / 2);
+
             }
         }
     }
