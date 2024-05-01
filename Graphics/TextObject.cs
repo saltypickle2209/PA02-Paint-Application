@@ -138,7 +138,7 @@ namespace Graphics
                 if (_parent.IsPerfectShape)
                     parentWidth = parentHeight = Math.Min(parentWidth, parentHeight);
 
-                textBlock.Width = parentWidth;
+                textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
 
                 textBlock.SetValue(Canvas.LeftProperty, _parent.StartingPoint.X < _parent.EndingPoint.X ?
                     _parent.StartingPoint.X + parentWidth / 2 - ((TextBlock)textBlock).DesiredSize.Width / 2 :
